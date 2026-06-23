@@ -93,7 +93,7 @@ function NetWorthCard({
         {netWorth < 0 ? '-' : ''}
         {formatCurrency(Math.abs(netWorth), settings)}
       </Text>
-      <Text style={{ fontSize: 12, color: colors.textMuted }}>
+      <Text style={{ fontSize: 14, color: colors.textMuted }}>
         Across {accountCount} {accountCount === 1 ? 'account' : 'accounts'}
       </Text>
     </View>
@@ -135,7 +135,7 @@ function GroupSection({
         </Text>
         <Text
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: '600',
             color: groupTotal < 0 ? colors.expense : colors.textMuted,
           }}

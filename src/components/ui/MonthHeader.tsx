@@ -125,7 +125,7 @@ export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Pro
                   >
                     <Text
                       style={{
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: isSelected || isCurrent ? '600' : '400',
                         color: isSelected
                           ? 'white'

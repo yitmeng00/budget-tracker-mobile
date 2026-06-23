@@ -9,6 +9,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
@@ -172,7 +173,7 @@ export default function SettingsScreen() {
         <SectionLabel text="General" />
         <SectionCard>
           <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-            <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 10 }}>
+            <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>
               Week starts on
             </Text>
             <SegmentedPicker
@@ -203,7 +204,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
           <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-            <Text style={{ fontSize: 13, color: colors.textMuted, marginBottom: 10 }}>
+            <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>
               Symbol position
             </Text>
             <SegmentedPicker
@@ -297,7 +298,7 @@ export default function SettingsScreen() {
             <View key={group.id} style={{ marginBottom: 12 }}>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: colors.textMuted,
                   paddingHorizontal: 20,
                   marginBottom: 6,
@@ -328,7 +329,7 @@ export default function SettingsScreen() {
             <View style={{ marginBottom: 12 }}>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   color: colors.textMuted,
                   paddingHorizontal: 20,
                   marginBottom: 6,
@@ -386,7 +387,7 @@ export default function SettingsScreen() {
                       {entry.category_name}
                     </Text>
                     {entry.override_amount !== null && entry.override_amount !== undefined && (
-                      <Text style={{ fontSize: 11, color: colors.accent, marginTop: 2 }}>
+                      <Text style={{ fontSize: 12, color: colors.accent, marginTop: 2 }}>
                         This month only
                       </Text>
                     )}
@@ -395,7 +396,7 @@ export default function SettingsScreen() {
                     <View style={{ alignItems: 'flex-end', marginRight: 6 }}>
                       <Text
                         style={{
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: '500',
                           color:
                             entry.spent > entry.effective_amount
@@ -405,7 +406,7 @@ export default function SettingsScreen() {
                       >
                         {formatCurrency(entry.spent, settings)} spent
                       </Text>
-                      <Text style={{ fontSize: 11, color: colors.textFaint, marginTop: 1 }}>
+                      <Text style={{ fontSize: 12, color: colors.textFaint, marginTop: 1 }}>
                         of {formatCurrency(entry.effective_amount, settings)}
                       </Text>
                     </View>
@@ -424,11 +425,25 @@ export default function SettingsScreen() {
         {/* ── About ── */}
         <SectionLabel text="About" />
         <SectionCard>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-            <Text style={{ fontSize: 15, color: colors.textPrimary, marginBottom: 3 }}>
-              Budget Tracker
-            </Text>
-            <Text style={{ fontSize: 13, color: colors.textMuted }}>Version 1.0.0</Text>
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 14,
+            }}
+          >
+            <Image
+              source={require('../../assets/logo.png')}
+              style={{ width: 48, height: 48, borderRadius: 12 }}
+            />
+            <View>
+              <Text style={{ fontSize: 17, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 }}>
+                Ledgr
+              </Text>
+              <Text style={{ fontSize: 14, color: colors.textMuted }}>Version 1.0.0</Text>
+            </View>
           </View>
         </SectionCard>
       </ScrollView>
@@ -597,7 +612,7 @@ function BudgetMonthNav({
                   >
                     <Text
                       style={{
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: isSelected || isCurrent ? '600' : '400',
                         color: isSelected
                           ? 'white'
@@ -679,7 +694,7 @@ function SubSectionHeader({
         marginTop: topMargin,
       }}
     >
-      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>{label}</Text>
+      <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textMuted }}>{label}</Text>
       <TouchableOpacity onPress={onAdd}>
         <Text style={{ fontSize: 24, color: colors.accent, lineHeight: 26 }}>+</Text>
       </TouchableOpacity>
@@ -710,7 +725,7 @@ function RowDivider() {
 function EmptyRow({ text }: { text: string }) {
   return (
     <View style={{ padding: 16, alignItems: 'center' }}>
-      <Text style={{ fontSize: 13, color: colors.textMuted }}>{text}</Text>
+      <Text style={{ fontSize: 14, color: colors.textMuted }}>{text}</Text>
     </View>
   );
 }
@@ -757,7 +772,7 @@ function SegmentedPicker({
           >
             <Text
               style={{
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: active ? '600' : '400',
                 color: active ? colors.textPrimary : colors.textMuted,
               }}
@@ -876,7 +891,7 @@ function CurrencyModal({
                       <Text style={{ fontSize: 15, color: colors.textPrimary }}>
                         {preset.country}
                       </Text>
-                      <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                      <Text style={{ fontSize: 14, color: colors.textMuted, marginTop: 2 }}>
                         {preset.code} · {preset.symbol}
                       </Text>
                     </View>
@@ -1228,7 +1243,7 @@ function AccountModal({
                   >
                     <Text
                       style={{
-                        fontSize: 11,
+                        fontSize: 13,
                         fontWeight: active ? '600' : '400',
                         color: active ? colors.textPrimary : colors.textMuted,
                       }}
@@ -1404,7 +1419,7 @@ function BudgetSettingsModal({
                   >
                     <Text
                       style={{
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: active ? '600' : '400',
                         color: active ? colors.textPrimary : colors.textMuted,
                       }}
@@ -1415,7 +1430,7 @@ function BudgetSettingsModal({
                 );
               })}
             </View>
-            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8 }}>
+            <Text style={{ fontSize: 14, color: colors.textMuted, marginTop: 8 }}>
               {scope === 'onwards'
                 ? `Applies from ${MONTH_NAMES[month - 1]} onwards. Earlier months are unaffected.`
                 : `Only affects ${MONTH_NAMES[month - 1]} ${year}. Other months keep their budget.`}
@@ -1492,7 +1507,7 @@ function ReassignModal({
 
         <Text
           style={{
-            fontSize: 13,
+            fontSize: 14,
             color: colors.textMuted,
             paddingHorizontal: 20,
             paddingVertical: 16,
@@ -1513,7 +1528,7 @@ function ReassignModal({
         >
           {options.length === 0 ? (
             <View style={{ padding: 16, alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: colors.textMuted }}>
+              <Text style={{ fontSize: 14, color: colors.textMuted }}>
                 No other {category?.type} categories available.
               </Text>
             </View>
@@ -1544,7 +1559,7 @@ function ReassignModal({
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
 const fieldLabel: import('react-native').TextStyle = {
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: '600',
   color: colors.textMuted,
   marginBottom: 8,

@@ -119,7 +119,7 @@ export default function StatsScreen() {
             >
               <Text
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: active ? '600' : '400',
                   color: active ? colors.textPrimary : colors.textMuted,
                 }}
@@ -210,7 +210,7 @@ function BudgetBreakdown({
             borderBottomColor: colors.border,
           }}
         >
-          <Text style={{ fontSize: 13, color: colors.expense, fontWeight: '600' }}>
+          <Text style={{ fontSize: 14, color: colors.expense, fontWeight: '600' }}>
             {overCount} {overCount === 1 ? 'category' : 'categories'} over budget
           </Text>
         </View>
@@ -262,7 +262,7 @@ function BudgetBreakdown({
                   </Text>
                 </View>
               )}
-              <Text style={{ fontSize: 12, color: isOver ? colors.expense : colors.textMuted }}>
+              <Text style={{ fontSize: 14, color: isOver ? colors.expense : colors.textMuted }}>
                 {formatCurrency(entry.spent, settings)}
                 <Text style={{ color: colors.textFaint }}>
                   {' '}
@@ -369,7 +369,7 @@ function CategoryBreakdown({
               <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
                 {cat.category_name}
               </Text>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textPrimary }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
                 {formatCurrency(cat.total, settings)}
               </Text>
             </View>
@@ -395,7 +395,7 @@ function CategoryBreakdown({
                 />
               </View>
               <Text
-                style={{ width: 34, textAlign: 'right', fontSize: 11, color: colors.textMuted }}
+                style={{ width: 34, textAlign: 'right', fontSize: 12, color: colors.textMuted }}
               >
                 {Math.round(pct)}%
               </Text>
