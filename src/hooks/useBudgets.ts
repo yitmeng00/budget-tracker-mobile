@@ -1,10 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { getBudgets, setBudgetDefault, setBudgetOverride } from '../services/budgets';
 
 export function useBudgets(year: number, month: number) {
   return useQuery({
     queryKey: ['budgets', year, month],
     queryFn: () => getBudgets(year, month),
+    placeholderData: keepPreviousData,
   });
 }
 
