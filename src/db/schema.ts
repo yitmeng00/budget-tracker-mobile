@@ -68,4 +68,16 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
   } catch {
     // column already exists — safe to ignore
   }
+
+  // Migration: add effective_from to budget_limits for "X onwards" start month tracking
+  try {
+    db.execSync(`ALTER TABLE budget_limits ADD COLUMN effective_from_year INTEGER`);
+  } catch {
+    // column already exists — safe to ignore
+  }
+  try {
+    db.execSync(`ALTER TABLE budget_limits ADD COLUMN effective_from_month INTEGER`);
+  } catch {
+    // column already exists — safe to ignore
+  }
 }

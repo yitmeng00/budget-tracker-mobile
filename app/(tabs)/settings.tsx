@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,8 @@ import {
   Modal,
   TextInput,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Image,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
@@ -439,7 +438,14 @@ export default function SettingsScreen() {
               style={{ width: 48, height: 48, borderRadius: 12 }}
             />
             <View>
-              <Text style={{ fontSize: 17, fontWeight: '600', color: colors.textPrimary, marginBottom: 2 }}>
+              <Text
+                style={{
+                  fontSize: 17,
+                  fontWeight: '600',
+                  color: colors.textPrimary,
+                  marginBottom: 2,
+                }}
+              >
                 Ledgr
               </Text>
               <Text style={{ fontSize: 14, color: colors.textMuted }}>Version 1.0.0</Text>
@@ -934,6 +940,37 @@ function CategoryModal({
     setName(category?.name ?? '');
   }
 
+  const catBackdrop = useRef(new Animated.Value(0)).current;
+  const catTranslateY = useRef(new Animated.Value(800)).current;
+
+  function handleClose() {
+    Animated.parallel([
+      Animated.timing(catBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
+      Animated.timing(catTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
+    ]).start(() => onClose());
+  }
+
+  useEffect(() => {
+    if (visible) {
+      catBackdrop.setValue(0);
+      catTranslateY.setValue(800);
+      Animated.parallel([
+        Animated.spring(catTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 35,
+          stiffness: 400,
+          mass: 1,
+        }),
+        Animated.sequence([
+          Animated.delay(120),
+          Animated.timing(catBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
+      ]).start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -942,29 +979,49 @@ function CategoryModal({
     } else {
       createCategory.mutate({ name: trimmed, color: autoColor(trimmed), icon: '', type });
     }
-    onClose();
+    handleClose();
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-          {/* Header */}
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+      <View style={{ flex: 1 }}>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            opacity: catBackdrop,
+          }}
+        />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
+        <Animated.View
+          style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            transform: [{ translateY: catTranslateY }],
+          }}
+        >
+          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
+            <View
+              style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }}
+            />
+          </View>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              backgroundColor: colors.surface,
+              paddingHorizontal: 20,
+              paddingVertical: 8,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
             }}
           >
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
               <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
             </TouchableOpacity>
             <Text
@@ -980,7 +1037,7 @@ function CategoryModal({
                 ? `Edit ${type === 'expense' ? 'Expense' : 'Income'} Category`
                 : `New ${type === 'expense' ? 'Expense' : 'Income'} Category`}
             </Text>
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
                 style={{
                   fontSize: 15,
@@ -992,9 +1049,7 @@ function CategoryModal({
               </Text>
             </TouchableOpacity>
           </View>
-
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            {/* Name */}
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
             <Text style={fieldLabel}>Name</Text>
             <TextInput
               value={name}
@@ -1004,10 +1059,11 @@ function CategoryModal({
               style={inputStyle}
               autoFocus={!isEdit}
               returnKeyType="done"
+              onSubmitEditing={handleSave}
             />
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+          </View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
@@ -1035,6 +1091,37 @@ function AccountGroupModal({
     setName(group?.name ?? '');
   }
 
+  const grpBackdrop = useRef(new Animated.Value(0)).current;
+  const grpTranslateY = useRef(new Animated.Value(800)).current;
+
+  function handleClose() {
+    Animated.parallel([
+      Animated.timing(grpBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
+      Animated.timing(grpTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
+    ]).start(() => onClose());
+  }
+
+  useEffect(() => {
+    if (visible) {
+      grpBackdrop.setValue(0);
+      grpTranslateY.setValue(800);
+      Animated.parallel([
+        Animated.spring(grpTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 35,
+          stiffness: 400,
+          mass: 1,
+        }),
+        Animated.sequence([
+          Animated.delay(120),
+          Animated.timing(grpBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
+      ]).start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -1043,28 +1130,49 @@ function AccountGroupModal({
     } else {
       createGroup.mutate(trimmed);
     }
-    onClose();
+    handleClose();
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+      <View style={{ flex: 1 }}>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            opacity: grpBackdrop,
+          }}
+        />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
+        <Animated.View
+          style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            transform: [{ translateY: grpTranslateY }],
+          }}
+        >
+          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
+            <View
+              style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }}
+            />
+          </View>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              backgroundColor: colors.surface,
+              paddingHorizontal: 20,
+              paddingVertical: 8,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
             }}
           >
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
               <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
             </TouchableOpacity>
             <Text
@@ -1078,7 +1186,7 @@ function AccountGroupModal({
             >
               {isEdit ? 'Edit Group' : 'New Group'}
             </Text>
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
                 style={{
                   fontSize: 15,
@@ -1090,8 +1198,7 @@ function AccountGroupModal({
               </Text>
             </TouchableOpacity>
           </View>
-
-          <View style={{ padding: 16 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
             <Text style={fieldLabel}>Name</Text>
             <TextInput
               value={name}
@@ -1104,8 +1211,8 @@ function AccountGroupModal({
               onSubmitEditing={handleSave}
             />
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
@@ -1139,6 +1246,37 @@ function AccountModal({
     setBalance('0');
   }
 
+  const acctBackdrop = useRef(new Animated.Value(0)).current;
+  const acctTranslateY = useRef(new Animated.Value(800)).current;
+
+  function handleClose() {
+    Animated.parallel([
+      Animated.timing(acctBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
+      Animated.timing(acctTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
+    ]).start(() => onClose());
+  }
+
+  useEffect(() => {
+    if (visible) {
+      acctBackdrop.setValue(0);
+      acctTranslateY.setValue(800);
+      Animated.parallel([
+        Animated.spring(acctTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 35,
+          stiffness: 400,
+          mass: 1,
+        }),
+        Animated.sequence([
+          Animated.delay(120),
+          Animated.timing(acctBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
+      ]).start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -1155,29 +1293,49 @@ function AccountModal({
         group_id: groupId,
       });
     }
-    onClose();
+    handleClose();
   }
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-          {/* Header */}
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+      <View style={{ flex: 1 }}>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            opacity: acctBackdrop,
+          }}
+        />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
+        <Animated.View
+          style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            transform: [{ translateY: acctTranslateY }],
+          }}
+        >
+          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
+            <View
+              style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }}
+            />
+          </View>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              backgroundColor: colors.surface,
+              paddingHorizontal: 20,
+              paddingVertical: 8,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
             }}
           >
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
               <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
             </TouchableOpacity>
             <Text
@@ -1191,7 +1349,7 @@ function AccountModal({
             >
               {isEdit ? 'Edit Account' : 'New Account'}
             </Text>
-            <TouchableOpacity onPress={handleSave}>
+            <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
                 style={{
                   fontSize: 15,
@@ -1203,9 +1361,7 @@ function AccountModal({
               </Text>
             </TouchableOpacity>
           </View>
-
-          <ScrollView contentContainerStyle={{ padding: 16 }}>
-            {/* Name */}
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
             <Text style={fieldLabel}>Name</Text>
             <TextInput
               value={name}
@@ -1214,10 +1370,8 @@ function AccountModal({
               placeholderTextColor={colors.textFaint}
               style={inputStyle}
               autoFocus={!isEdit}
-              returnKeyType="done"
+              returnKeyType="next"
             />
-
-            {/* Group */}
             <Text style={[fieldLabel, { marginTop: 20 }]}>Group</Text>
             <View
               style={{
@@ -1225,6 +1379,8 @@ function AccountModal({
                 backgroundColor: colors.bg,
                 borderRadius: 10,
                 padding: 3,
+                borderWidth: 1,
+                borderColor: colors.border,
               }}
             >
               {groups.map((g) => {
@@ -1255,8 +1411,6 @@ function AccountModal({
                 );
               })}
             </View>
-
-            {/* Initial balance (add only) */}
             {!isEdit && (
               <>
                 <Text style={[fieldLabel, { marginTop: 20 }]}>Initial Balance</Text>
@@ -1264,15 +1418,17 @@ function AccountModal({
                   value={balance}
                   onChangeText={setBalance}
                   keyboardType="decimal-pad"
+                  contextMenuHidden
                   placeholderTextColor={colors.textFaint}
                   style={inputStyle}
                   returnKeyType="done"
+                  onSubmitEditing={handleSave}
                 />
               </>
             )}
-          </ScrollView>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+          </View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
@@ -1307,53 +1463,125 @@ function BudgetSettingsModal({
     setScope(hasOverride ? 'month' : 'onwards');
   }
 
+  const budgetBackdrop = useRef(new Animated.Value(0)).current;
+  const budgetTranslateY = useRef(new Animated.Value(800)).current;
+
+  function handleClose() {
+    Animated.parallel([
+      Animated.timing(budgetBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
+      Animated.timing(budgetTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
+    ]).start(() => onClose());
+  }
+
+  useEffect(() => {
+    if (visible) {
+      budgetBackdrop.setValue(0);
+      budgetTranslateY.setValue(800);
+      Animated.parallel([
+        Animated.spring(budgetTranslateY, {
+          toValue: 0,
+          useNativeDriver: true,
+          damping: 35,
+          stiffness: 400,
+          mass: 1,
+        }),
+        Animated.sequence([
+          Animated.delay(120),
+          Animated.timing(budgetBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
+        ]),
+      ]).start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
+
   function handleSave() {
     if (!entry) return;
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) return;
     if (scope === 'onwards') {
-      // Lock this month in + update default so future months inherit the new amount
-      setOverride.mutate({ categoryId: entry.category_id, year, month, amount: parsed });
-      setDefault.mutate({ categoryId: entry.category_id, amount: parsed });
+      const now = new Date();
+      const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
+      if (isCurrentMonth) {
+        setOverride.mutate({ categoryId: entry.category_id, year, month, amount: parsed });
+      }
+      setDefault.mutate({
+        categoryId: entry.category_id,
+        amount: parsed,
+        effectiveFromYear: year,
+        effectiveFromMonth: month,
+      });
     } else {
-      // This month only — save override, leave default unchanged
       setOverride.mutate({ categoryId: entry.category_id, year, month, amount: parsed });
     }
-    onClose();
+    handleClose();
   }
 
   function handleRemove() {
     if (!entry) return;
-    if (hasOverride) {
-      setOverride.mutate({ categoryId: entry.category_id, year, month, amount: null });
-    } else {
-      setDefault.mutate({ categoryId: entry.category_id, amount: null });
-    }
-    onClose();
+    const title = hasOverride ? 'Remove Override' : 'Remove Budget';
+    const message = hasOverride
+      ? `Remove the override for ${MONTH_NAMES[month - 1]} ${year}? It will revert to the default budget.`
+      : `Remove the budget for "${entry.category_name}"? All months without a monthly override will no longer have a budget.`;
+    Alert.alert(title, message, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: () => {
+          if (hasOverride) {
+            setOverride.mutate({ categoryId: entry.category_id, year, month, amount: null });
+          } else {
+            setDefault.mutate({ categoryId: entry.category_id, amount: null });
+          }
+          handleClose();
+        },
+      },
+    ]);
   }
 
   const canSave = !isNaN(parseFloat(amount)) && parseFloat(amount) > 0;
   const hasBudget = entry?.effective_amount !== null && entry?.effective_amount !== undefined;
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+      <View style={{ flex: 1 }}>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            opacity: budgetBackdrop,
+          }}
+        />
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
+        <Animated.View
+          style={{
+            backgroundColor: colors.surface,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            transform: [{ translateY: budgetTranslateY }],
+          }}
+        >
+          <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
+            <View
+              style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }}
+            />
+          </View>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              backgroundColor: colors.surface,
+              paddingHorizontal: 20,
+              paddingVertical: 8,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
             }}
           >
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
               <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
             </TouchableOpacity>
             <Text
@@ -1367,7 +1595,11 @@ function BudgetSettingsModal({
             >
               {entry?.category_name}
             </Text>
-            <TouchableOpacity onPress={handleSave} disabled={!canSave}>
+            <TouchableOpacity
+              onPress={handleSave}
+              disabled={!canSave}
+              style={{ minWidth: 60, alignItems: 'flex-end' }}
+            >
               <Text
                 style={{
                   fontSize: 15,
@@ -1379,8 +1611,7 @@ function BudgetSettingsModal({
               </Text>
             </TouchableOpacity>
           </View>
-
-          <View style={{ padding: 16 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
             <Text style={fieldLabel}>Budget Amount</Text>
             <TextInput
               value={amount}
@@ -1388,17 +1619,15 @@ function BudgetSettingsModal({
               placeholder="0.00"
               placeholderTextColor={colors.textFaint}
               keyboardType="decimal-pad"
+              contextMenuHidden
               autoFocus
-              returnKeyType="done"
-              onSubmitEditing={handleSave}
               style={inputStyle}
             />
-
             <Text style={[fieldLabel, { marginTop: 20 }]}>Apply to</Text>
             <View
               style={{
                 flexDirection: 'row',
-                backgroundColor: colors.surface,
+                backgroundColor: colors.bg,
                 borderRadius: 10,
                 padding: 3,
               }}
@@ -1414,7 +1643,7 @@ function BudgetSettingsModal({
                       paddingVertical: 8,
                       borderRadius: 7,
                       alignItems: 'center',
-                      backgroundColor: active ? colors.bg : 'transparent',
+                      backgroundColor: active ? colors.surface : 'transparent',
                     }}
                   >
                     <Text
@@ -1435,12 +1664,11 @@ function BudgetSettingsModal({
                 ? `Applies from ${MONTH_NAMES[month - 1]} onwards. Earlier months are unaffected.`
                 : `Only affects ${MONTH_NAMES[month - 1]} ${year}. Other months keep their budget.`}
             </Text>
-
             {hasBudget && (
               <TouchableOpacity
                 onPress={handleRemove}
                 style={{
-                  marginTop: 32,
+                  marginTop: 24,
                   paddingVertical: 14,
                   borderRadius: 12,
                   alignItems: 'center',
@@ -1453,8 +1681,8 @@ function BudgetSettingsModal({
               </TouchableOpacity>
             )}
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
