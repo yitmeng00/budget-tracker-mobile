@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Budget Tracker",
+    "slug": "budget-tracker-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "budget-tracker",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ivanwong.budgettracker"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sqlite",
+        {
+          "enableFTS": false
+        }
+      ],
+      "expo-status-bar",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
