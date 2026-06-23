@@ -102,7 +102,7 @@ export default function DonutChart({ items, settings }: Props) {
               />
               <Text
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   color: colors.textMuted,
                   textAlign: 'center',
                   marginBottom: 2,
@@ -114,7 +114,7 @@ export default function DonutChart({ items, settings }: Props) {
               </Text>
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: '700',
                   color: colors.textPrimary,
                   textAlign: 'center',
@@ -125,16 +125,16 @@ export default function DonutChart({ items, settings }: Props) {
               >
                 {formatCurrency(selectedCat.total, settings)}
               </Text>
-              <Text style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
+              <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
                 {Math.round(selectedCat.pct)}%
               </Text>
             </>
           ) : (
             <>
-              <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 2 }}>Total</Text>
+              <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 2 }}>Total</Text>
               <Text
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: '700',
                   color: colors.textPrimary,
                   textAlign: 'center',

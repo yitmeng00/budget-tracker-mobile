@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Budget Tracker",
-    "slug": "budget-tracker-mobile",
+    "name": "Ledgr",
+    "slug": "ledgr",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "budget-tracker",
+    "scheme": "ledgr",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {

@@ -18,7 +18,7 @@ export default function TrendChart({ months, settings }: Props) {
   if (months.length === 0) {
     return (
       <View style={{ height: CHART_H + 40, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontSize: 13, color: colors.textMuted }}>No data</Text>
+        <Text style={{ fontSize: 14, color: colors.textMuted }}>No data</Text>
       </View>
     );
   }
@@ -34,13 +34,13 @@ export default function TrendChart({ months, settings }: Props) {
           <View
             style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.income }}
           />
-          <Text style={{ fontSize: 12, color: colors.textMuted }}>Income</Text>
+          <Text style={{ fontSize: 13, color: colors.textMuted }}>Income</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View
             style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: colors.expense }}
           />
-          <Text style={{ fontSize: 12, color: colors.textMuted }}>Expenses</Text>
+          <Text style={{ fontSize: 13, color: colors.textMuted }}>Expenses</Text>
         </View>
       </View>
 
@@ -89,7 +89,7 @@ export default function TrendChart({ months, settings }: Props) {
             style={{
               flex: 1,
               textAlign: 'center',
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: selectedIdx === i ? '700' : '400',
               color: selectedIdx === i ? colors.accent : colors.textMuted,
             }}
@@ -114,7 +114,7 @@ export default function TrendChart({ months, settings }: Props) {
             >
               <Text
                 style={{
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: '600',
                   color: colors.textPrimary,
                   marginBottom: 10,
@@ -124,20 +124,20 @@ export default function TrendChart({ months, settings }: Props) {
               </Text>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View>
-                  <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 3 }}>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 3 }}>
                     Income
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.income }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.income }}>
                     {formatCurrency(selected.income, settings)}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 3 }}>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 3 }}>
                     Net
                   </Text>
                   <Text
                     style={{
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: '600',
                       color: net >= 0 ? colors.income : colors.expense,
                     }}
@@ -147,10 +147,10 @@ export default function TrendChart({ months, settings }: Props) {
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 10, color: colors.textMuted, marginBottom: 3 }}>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginBottom: 3 }}>
                     Expenses
                   </Text>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: colors.expense }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.expense }}>
                     {formatCurrency(selected.expenses, settings)}
                   </Text>
                 </View>

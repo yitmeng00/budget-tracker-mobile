@@ -87,10 +87,10 @@ function MonthRow({
             </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 16, marginTop: 5 }}>
-            <Text style={{ fontSize: 12, color: colors.income }}>
+            <Text style={{ fontSize: 14, color: colors.income }}>
               ↑ {formatCurrency(summary.income, settings)}
             </Text>
-            <Text style={{ fontSize: 12, color: colors.expense }}>
+            <Text style={{ fontSize: 14, color: colors.expense }}>
               ↓ {formatCurrency(summary.expenses, settings)}
             </Text>
           </View>
@@ -101,7 +101,7 @@ function MonthRow({
         <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
           {transactions.length === 0 ? (
             <View style={{ padding: 16, alignItems: 'center' }}>
-              <Text style={{ color: colors.textMuted, fontSize: 13 }}>No transactions</Text>
+              <Text style={{ color: colors.textMuted, fontSize: 14 }}>No transactions</Text>
             </View>
           ) : (
             transactions.map((t, idx) => (

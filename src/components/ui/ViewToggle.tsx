@@ -48,7 +48,7 @@ export default function ViewToggle({ value, onChange }: Props) {
           >
             <Text
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: active ? '600' : '400',
                 color: active ? colors.textPrimary : colors.textMuted,
               }}

@@ -97,7 +97,7 @@ export default function CalendarView({
           <View key={h} style={{ flex: 1, alignItems: 'center', paddingVertical: 6 }}>
             <Text
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: '600',
                 color: colors.textMuted,
                 textTransform: 'uppercase',
@@ -191,7 +191,7 @@ export default function CalendarView({
               borderTopColor: colors.border,
             }}
           >
-            <Text style={{ fontSize: 13, fontWeight: '600', color: colors.textMuted }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textMuted }}>
               {selectedTransactions.length === 0
                 ? 'No transactions'
                 : `${selectedTransactions.length} transaction${selectedTransactions.length > 1 ? 's' : ''}`}
@@ -199,7 +199,7 @@ export default function CalendarView({
             {selectedTransactions.length > 0 && (
               <Text
                 style={{
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: '600',
                   color:
                     selectedTransactions.reduce((s, t) => s + t.amount, 0) >= 0
