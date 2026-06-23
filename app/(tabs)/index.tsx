@@ -5,20 +5,29 @@ import { Plus } from 'lucide-react-native';
 import { useMonth } from '@/hooks/useMonth';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useSettings } from '@/hooks/useSettings';
+import { useYearlySummary } from '@/hooks/useStats';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
-import MonthHeader from '@/components/ui/MonthHeader';
+import MonthHeader, { YearHeader } from '@/components/ui/MonthHeader';
+import ViewToggle from '@/components/ui/ViewToggle';
 import SummaryCards from '@/components/transactions/SummaryCards';
 import DailyView from '@/components/transactions/DailyView';
+import CalendarView from '@/components/transactions/CalendarView';
+import MonthlyView from '@/components/transactions/MonthlyView';
 import AddTransactionSheet from '@/components/transactions/AddTransactionSheet';
-import type { Transaction } from '@/types';
+import type { Transaction, ViewMode } from '@/types';
 
 export default function TransactionsScreen() {
-  const { year, month, prev, next } = useMonth();
+  const { year, month, prev, next, jumpTo } = useMonth();
   const { data: transactions = [] } = useTransactions(year, month);
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
 
+  const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [sheetVisible, setSheetVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
+
+  const currentYear = new Date().getFullYear();
+  const [yearView, setYearView] = useState(currentYear);
+  const { data: yearlySummary = { income: 0, expenses: 0 } } = useYearlySummary(yearView);
 
   const income = transactions.filter((t) => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
   const expenses = transactions
@@ -41,13 +50,50 @@ export default function TransactionsScreen() {
     setEditingTransaction(undefined);
   }
 
+  const isMonthly = viewMode === 'monthly';
+  const yearlyNet = yearlySummary.income - yearlySummary.expenses;
+
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
-      <MonthHeader year={year} month={month} onPrev={prev} onNext={next} />
+      {isMonthly ? (
+        <YearHeader
+          year={yearView}
+          onPrev={() => setYearView((y) => y - 1)}
+          onNext={() => setYearView((y) => y + 1)}
+          disableNext={yearView >= currentYear}
+        />
+      ) : (
+        <MonthHeader year={year} month={month} onPrev={prev} onNext={next} onJump={jumpTo} />
+      )}
 
-      <SummaryCards income={income} expenses={expenses} net={net} settings={settings} />
+      {isMonthly ? (
+        <SummaryCards
+          income={yearlySummary.income}
+          expenses={yearlySummary.expenses}
+          net={yearlyNet}
+          settings={settings}
+        />
+      ) : (
+        <SummaryCards income={income} expenses={expenses} net={net} settings={settings} />
+      )}
 
-      <DailyView transactions={transactions} settings={settings} onPressTransaction={openEdit} />
+      <ViewToggle value={viewMode} onChange={setViewMode} />
+
+      {viewMode === 'daily' && (
+        <DailyView transactions={transactions} settings={settings} onPressTransaction={openEdit} />
+      )}
+
+      {viewMode === 'calendar' && (
+        <CalendarView
+          year={year}
+          month={month}
+          transactions={transactions}
+          settings={settings}
+          onPressTransaction={openEdit}
+        />
+      )}
+
+      {viewMode === 'monthly' && <MonthlyView year={yearView} settings={settings} />}
 
       <TouchableOpacity
         onPress={openAdd}

@@ -1,5 +1,4 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { getIcon } from '@/lib/icons';
 import { formatCurrency } from '@/lib/currency';
 import type { Transaction, UserSettings } from '@/types';
 
@@ -11,10 +10,8 @@ interface Props {
 
 export default function TransactionItem({ transaction, settings, onPress }: Props) {
   const { category, account, amount, note } = transaction;
-  const IconComponent = getIcon(category?.icon ?? 'more-horizontal');
   const isIncome = amount > 0;
-  const sign = isIncome ? '+' : '-';
-  const formatted = `${sign}${formatCurrency(amount, settings)}`;
+  const formatted = `${isIncome ? '+' : '-'}${formatCurrency(Math.abs(amount), settings)}`;
 
   return (
     <TouchableOpacity
@@ -23,11 +20,15 @@ export default function TransactionItem({ transaction, settings, onPress }: Prop
       className="flex-row items-center px-4 py-3 bg-surface"
     >
       <View
-        style={{ backgroundColor: category?.color ?? '#8a96b8' }}
-        className="w-10 h-10 rounded-full items-center justify-center mr-3"
-      >
-        <IconComponent color="white" size={18} />
-      </View>
+        style={{
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          backgroundColor: category?.color ?? '#8a96b8',
+          marginRight: 12,
+          flexShrink: 0,
+        }}
+      />
 
       <View className="flex-1 min-w-0">
         <Text className="text-text-primary text-sm font-medium" numberOfLines={1}>
