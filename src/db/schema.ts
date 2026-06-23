@@ -43,6 +43,7 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
       category_id INTEGER NOT NULL REFERENCES categories(id),
       amount REAL NOT NULL,
       note TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
       date TEXT NOT NULL,
       time TEXT NOT NULL DEFAULT '00:00:00'
     );
@@ -60,4 +61,11 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
       PRIMARY KEY (category_id, year, month)
     );
   `);
+
+  // Migration: add description column if it doesn't exist yet
+  try {
+    db.execSync(`ALTER TABLE transactions ADD COLUMN description TEXT NOT NULL DEFAULT ''`);
+  } catch {
+    // column already exists — safe to ignore
+  }
 }
