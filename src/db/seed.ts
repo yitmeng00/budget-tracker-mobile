@@ -35,6 +35,31 @@ export function seedIfNeeded(db: SQLite.SQLiteDatabase): void {
 }
 
 export function seedSampleData(db: SQLite.SQLiteDatabase): void {
+  // Seed extra accounts if only the initial Cash account exists
+  const acctCount = db.getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM accounts');
+  if (acctCount && acctCount.n <= 1) {
+    const grpId = (name: string): number | null =>
+      db.getFirstSync<{ id: number }>('SELECT id FROM account_groups WHERE name = ?', [name])?.id ??
+      null;
+
+    db.runSync(
+      'INSERT INTO accounts (name, type, icon, color, balance, group_id) VALUES (?, ?, ?, ?, ?, ?)',
+      ['Maybank Savings', 'Bank', 'landmark', '#2563eb', 8500, grpId('Bank')],
+    );
+    db.runSync(
+      'INSERT INTO accounts (name, type, icon, color, balance, group_id) VALUES (?, ?, ?, ?, ?, ?)',
+      ['CIMB Credit Card', 'Card', 'credit-card', '#ef4444', -1200, grpId('Card')],
+    );
+    db.runSync(
+      'INSERT INTO accounts (name, type, icon, color, balance, group_id) VALUES (?, ?, ?, ?, ?, ?)',
+      ["Touch 'n Go", 'E-wallet', 'smartphone', '#06b6d4', 150, grpId('E-wallet')],
+    );
+    db.runSync(
+      'INSERT INTO accounts (name, type, icon, color, balance, group_id) VALUES (?, ?, ?, ?, ?, ?)',
+      ['GrabPay', 'E-wallet', 'zap', '#7b5cf0', 85, grpId('E-wallet')],
+    );
+  }
+
   const hasTransactions = db.getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM transactions');
   if (hasTransactions && hasTransactions.n > 0) return;
 
