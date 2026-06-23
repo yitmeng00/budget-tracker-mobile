@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getAccounts,
   getAccountGroups,
+  getNetWorth,
   createAccount,
   updateAccount,
   deleteAccount,
@@ -10,6 +11,10 @@ import type { Account } from '../types';
 
 export function useAccounts() {
   return useQuery({ queryKey: ['accounts'], queryFn: getAccounts });
+}
+
+export function useNetWorth() {
+  return useQuery({ queryKey: ['accounts', 'net-worth'], queryFn: getNetWorth });
 }
 
 export function useAccountGroups() {

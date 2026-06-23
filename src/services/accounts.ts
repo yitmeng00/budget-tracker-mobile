@@ -1,6 +1,14 @@
 import { getDb } from '../db/client';
 import type { Account, AccountGroup } from '../types';
 
+export async function getNetWorth(): Promise<number> {
+  const db = getDb();
+  const row = db.getFirstSync<{ total: number }>(
+    'SELECT COALESCE(SUM(balance), 0) AS total FROM accounts',
+  );
+  return row?.total ?? 0;
+}
+
 export async function getAccountGroups(): Promise<AccountGroup[]> {
   const db = getDb();
   return db.getAllSync<AccountGroup>('SELECT * FROM account_groups ORDER BY sort_order');
