@@ -55,6 +55,29 @@ export async function getYearlyCategoryStats(
   );
 }
 
+export async function getMonthsTrend(
+  year: number,
+  month: number,
+  count: number,
+): Promise<MonthlySummary[]> {
+  const db = getDb();
+  const rows = db.getAllSync<MonthlySummary>(
+    `SELECT
+       CAST(strftime('%Y', date) AS INTEGER) AS year,
+       CAST(strftime('%m', date) AS INTEGER) AS month,
+       SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END)      AS income,
+       SUM(CASE WHEN amount < 0 THEN ABS(amount) ELSE 0 END) AS expenses
+     FROM transactions
+     WHERE (CAST(strftime('%Y', date) AS INTEGER) * 12 + CAST(strftime('%m', date) AS INTEGER))
+           <= (? * 12 + ?)
+     GROUP BY year, month
+     ORDER BY year DESC, month DESC
+     LIMIT ?`,
+    [year, month, count],
+  );
+  return rows.reverse();
+}
+
 export async function getMonthlySummaries(count: number): Promise<MonthlySummary[]> {
   const db = getDb();
   return db.getAllSync<MonthlySummary>(

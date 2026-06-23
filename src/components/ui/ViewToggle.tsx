@@ -19,6 +19,7 @@ export default function ViewToggle({ value, onChange }: Props) {
       style={{
         flexDirection: 'row',
         marginHorizontal: 16,
+        marginTop: 10,
         marginBottom: 8,
         backgroundColor: colors.bg,
         borderRadius: 12,

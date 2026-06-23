@@ -1,250 +1,120 @@
-import { View, Text, ScrollView } from 'react-native';
-import { useMonthsForYear, useYearlyCategoryStats } from '@/hooks/useStats';
+import { useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { useMonthsForYear } from '@/hooks/useStats';
+import { useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/currency';
 import { colors } from '@/lib/colors';
-import { MONTH_SHORT } from '@/lib/constants';
-import type { CategoryStats, UserSettings } from '@/types';
+import { MONTH_NAMES } from '@/lib/constants';
+import TransactionItem from './TransactionItem';
+import type { MonthlySummary, Transaction, UserSettings } from '@/types';
 
 interface Props {
   year: number;
   settings: UserSettings;
+  onPressTransaction?: (t: Transaction) => void;
 }
 
-export default function MonthlyView({ year, settings }: Props) {
+export default function MonthlyView({ year, settings, onPressTransaction }: Props) {
   const { data: months = [] } = useMonthsForYear(year);
-  const { data: expCats = [] } = useYearlyCategoryStats(year, 'expense');
-  const { data: incCats = [] } = useYearlyCategoryStats(year, 'income');
-
-  const maxMonth = Math.max(...months.map((m) => Math.max(m.income, m.expenses)), 0.01);
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-      {/* Monthly breakdown */}
-      <SectionLabel text="By Month" />
-      <View
-        style={{
-          marginHorizontal: 16,
-          backgroundColor: colors.surface,
-          borderRadius: 16,
-          overflow: 'hidden',
-          marginBottom: 16,
-        }}
-      >
+      <View style={{ marginHorizontal: 16, marginTop: 8 }}>
         {months.length === 0 ? (
           <View style={{ padding: 24, alignItems: 'center' }}>
             <Text style={{ color: colors.textMuted, fontSize: 14 }}>No data for {year}</Text>
           </View>
         ) : (
-          months.map((m, idx) => {
-            const mNet = m.income - m.expenses;
-            const iw = `${Math.round((m.income / maxMonth) * 100)}%` as `${number}%`;
-            const ew = `${Math.round((m.expenses / maxMonth) * 100)}%` as `${number}%`;
-            return (
-              <View
+          [...months]
+            .reverse()
+            .map((m) => (
+              <MonthRow
                 key={m.month}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderTopWidth: idx === 0 ? 0 : 1,
-                  borderTopColor: colors.border,
-                }}
-              >
-                <View
-                  style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}
-                >
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
-                    {MONTH_SHORT[m.month - 1]}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      fontWeight: '600',
-                      color: mNet >= 0 ? colors.income : colors.expense,
-                    }}
-                  >
-                    {mNet >= 0 ? '+' : '-'}
-                    {formatCurrency(Math.abs(mNet), settings)}
-                  </Text>
-                </View>
-
-                {/* Income bar */}
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                  <View
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: 4,
-                      backgroundColor: colors.income,
-                      marginRight: 8,
-                    }}
-                  />
-                  <View
-                    style={{
-                      flex: 1,
-                      height: 5,
-                      backgroundColor: colors.bg,
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: iw,
-                        height: '100%',
-                        backgroundColor: colors.income,
-                        borderRadius: 3,
-                      }}
-                    />
-                  </View>
-                  <Text
-                    style={{ width: 76, textAlign: 'right', fontSize: 11, color: colors.income }}
-                  >
-                    {formatCurrency(m.income, settings)}
-                  </Text>
-                </View>
-
-                {/* Expense bar */}
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: 4,
-                      backgroundColor: colors.expense,
-                      marginRight: 8,
-                    }}
-                  />
-                  <View
-                    style={{
-                      flex: 1,
-                      height: 5,
-                      backgroundColor: colors.bg,
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: ew,
-                        height: '100%',
-                        backgroundColor: colors.expense,
-                        borderRadius: 3,
-                      }}
-                    />
-                  </View>
-                  <Text
-                    style={{ width: 76, textAlign: 'right', fontSize: 11, color: colors.expense }}
-                  >
-                    {formatCurrency(m.expenses, settings)}
-                  </Text>
-                </View>
-              </View>
-            );
-          })
+                summary={m}
+                year={year}
+                settings={settings}
+                onPressTransaction={onPressTransaction}
+              />
+            ))
         )}
       </View>
-
-      {/* Expense categories */}
-      {expCats.length > 0 && (
-        <>
-          <SectionLabel text="Expenses by Category" />
-          <CategoryList items={expCats} settings={settings} />
-        </>
-      )}
-
-      {/* Income categories */}
-      {incCats.length > 0 && (
-        <>
-          <SectionLabel text="Income by Category" />
-          <CategoryList items={incCats} settings={settings} />
-        </>
-      )}
     </ScrollView>
   );
 }
 
-function SectionLabel({ text }: { text: string }) {
-  return (
-    <Text
-      style={{
-        fontSize: 11,
-        fontWeight: '700',
-        color: colors.textMuted,
-        textTransform: 'uppercase',
-        letterSpacing: 0.8,
-        paddingHorizontal: 20,
-        marginBottom: 8,
-      }}
-    >
-      {text}
-    </Text>
-  );
-}
+function MonthRow({
+  summary,
+  year,
+  settings,
+  onPressTransaction,
+}: {
+  summary: MonthlySummary;
+  year: number;
+  settings: UserSettings;
+  onPressTransaction?: (t: Transaction) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const { data: transactions = [] } = useTransactions(year, summary.month);
 
-function CategoryList({ items, settings }: { items: CategoryStats[]; settings: UserSettings }) {
-  const total = items.reduce((s, c) => s + c.total, 0);
+  const net = summary.income - summary.expenses;
+
   return (
     <View
       style={{
-        marginHorizontal: 16,
+        marginBottom: 10,
         backgroundColor: colors.surface,
         borderRadius: 16,
         overflow: 'hidden',
-        marginBottom: 16,
       }}
     >
-      {items.map((cat, idx) => {
-        const pct = total > 0 ? (cat.total / total) * 100 : 0;
-        const barWidth = `${Math.round(pct)}%` as `${number}%`;
-        return (
+      <TouchableOpacity onPress={() => setExpanded((prev) => !prev)} activeOpacity={0.7}>
+        <View style={{ padding: 16 }}>
           <View
-            key={cat.category_id}
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderTopWidth: idx === 0 ? 0 : 1,
-              borderTopColor: colors.border,
-            }}
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
           >
-            <View
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: 5,
-                backgroundColor: cat.category_color,
-                marginRight: 10,
-              }}
-            />
-            <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
-              {cat.category_name}
+            <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textPrimary }}>
+              {MONTH_NAMES[summary.month - 1]}
             </Text>
-            <View
+            <Text
               style={{
-                width: 72,
-                height: 5,
-                backgroundColor: colors.bg,
-                borderRadius: 3,
-                overflow: 'hidden',
-                marginRight: 12,
+                fontSize: 14,
+                fontWeight: '600',
+                color: net >= 0 ? colors.income : colors.expense,
               }}
             >
-              <View
-                style={{
-                  width: barWidth,
-                  height: '100%',
-                  backgroundColor: cat.category_color,
-                  borderRadius: 3,
-                }}
-              />
-            </View>
-            <Text style={{ width: 72, textAlign: 'right', fontSize: 13, color: colors.textMuted }}>
-              {formatCurrency(cat.total, settings)}
+              {net >= 0 ? '+' : '-'}
+              {formatCurrency(Math.abs(net), settings)}
             </Text>
           </View>
-        );
-      })}
+          <View style={{ flexDirection: 'row', gap: 16, marginTop: 5 }}>
+            <Text style={{ fontSize: 12, color: colors.income }}>
+              ↑ {formatCurrency(summary.income, settings)}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.expense }}>
+              ↓ {formatCurrency(summary.expenses, settings)}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {expanded && (
+        <View style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
+          {transactions.length === 0 ? (
+            <View style={{ padding: 16, alignItems: 'center' }}>
+              <Text style={{ color: colors.textMuted, fontSize: 13 }}>No transactions</Text>
+            </View>
+          ) : (
+            transactions.map((t, idx) => (
+              <View key={t.id}>
+                {idx > 0 && (
+                  <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
+                )}
+                <TransactionItem transaction={t} settings={settings} onPress={onPressTransaction} />
+              </View>
+            ))
+          )}
+        </View>
+      )}
     </View>
   );
 }
