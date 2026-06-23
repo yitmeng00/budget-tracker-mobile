@@ -6,6 +6,9 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
+  createAccountGroup,
+  updateAccountGroup,
+  deleteAccountGroup,
 } from '../services/accounts';
 import type { Account } from '../types';
 
@@ -43,5 +46,29 @@ export function useDeleteAccount() {
   return useMutation({
     mutationFn: (id: number) => deleteAccount(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['accounts'] }),
+  });
+}
+
+export function useCreateAccountGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => createAccountGroup(name),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['account-groups'] }),
+  });
+}
+
+export function useUpdateAccountGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) => updateAccountGroup(id, name),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['account-groups'] }),
+  });
+}
+
+export function useDeleteAccountGroup() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteAccountGroup(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['account-groups'] }),
   });
 }

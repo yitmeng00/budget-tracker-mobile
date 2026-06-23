@@ -178,15 +178,6 @@ function AccountRow({ account, settings }: { account: Account; settings: UserSet
         paddingVertical: 14,
       }}
     >
-      <View
-        style={{
-          width: 12,
-          height: 12,
-          borderRadius: 6,
-          backgroundColor: account.color,
-          marginRight: 12,
-        }}
-      />
       <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>{account.name}</Text>
       <Text
         style={{

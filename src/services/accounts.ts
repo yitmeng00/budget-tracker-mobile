@@ -14,6 +14,36 @@ export async function getAccountGroups(): Promise<AccountGroup[]> {
   return db.getAllSync<AccountGroup>('SELECT * FROM account_groups ORDER BY sort_order');
 }
 
+export async function createAccountGroup(name: string): Promise<number> {
+  const db = getDb();
+  const row = db.getFirstSync<{ n: number }>(
+    'SELECT COALESCE(MAX(sort_order), 0) AS n FROM account_groups',
+  );
+  const result = db.runSync('INSERT INTO account_groups (name, sort_order) VALUES (?, ?)', [
+    name,
+    (row?.n ?? 0) + 1,
+  ]);
+  return result.lastInsertRowId;
+}
+
+export async function updateAccountGroup(id: number, name: string): Promise<void> {
+  const db = getDb();
+  db.runSync('UPDATE account_groups SET name = ? WHERE id = ?', [name, id]);
+}
+
+export async function deleteAccountGroup(id: number): Promise<void> {
+  const db = getDb();
+  const row = db.getFirstSync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM accounts WHERE group_id = ?',
+    [id],
+  );
+  if (row && row.n > 0)
+    throw new Error(
+      'This group has accounts. Remove all accounts first before deleting the group.',
+    );
+  db.runSync('DELETE FROM account_groups WHERE id = ?', [id]);
+}
+
 export async function getAccounts(): Promise<Account[]> {
   const db = getDb();
   return db.getAllSync<Account>('SELECT * FROM accounts ORDER BY group_id, name');
@@ -39,5 +69,10 @@ export async function updateAccount(id: number, data: Partial<Omit<Account, 'id'
 
 export async function deleteAccount(id: number): Promise<void> {
   const db = getDb();
+  const row = db.getFirstSync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM transactions WHERE account_id = ?',
+    [id],
+  );
+  if (row && row.n > 0) throw new Error('This account has transactions and cannot be deleted.');
   db.runSync('DELETE FROM accounts WHERE id = ?', [id]);
 }
