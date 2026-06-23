@@ -19,17 +19,6 @@ export default function TransactionItem({ transaction, settings, onPress }: Prop
       activeOpacity={0.7}
       className="flex-row items-center px-4 py-3 bg-surface"
     >
-      <View
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: category?.color ?? '#8a96b8',
-          marginRight: 12,
-          flexShrink: 0,
-        }}
-      />
-
       <View className="flex-1 min-w-0">
         <Text className="text-text-primary text-sm font-medium" numberOfLines={1}>
           {category?.name ?? 'Unknown'}

@@ -32,6 +32,23 @@ export async function updateCategory(
   db.runSync(`UPDATE categories SET ${setClause} WHERE id = ?`, values);
 }
 
+export async function getCategoryTransactionCount(id: number): Promise<number> {
+  const db = getDb();
+  const row = db.getFirstSync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM transactions WHERE category_id = ?',
+    [id],
+  );
+  return row?.n ?? 0;
+}
+
+export async function reassignAndDeleteCategory(fromId: number, toId: number): Promise<void> {
+  const db = getDb();
+  db.withTransactionSync(() => {
+    db.runSync('UPDATE transactions SET category_id = ? WHERE category_id = ?', [toId, fromId]);
+    db.runSync('DELETE FROM categories WHERE id = ?', [fromId]);
+  });
+}
+
 export async function deleteCategory(id: number): Promise<void> {
   const db = getDb();
   db.runSync('DELETE FROM categories WHERE id = ?', [id]);

@@ -4,6 +4,7 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  reassignAndDeleteCategory,
 } from '../services/categories';
 import type { Category } from '../types';
 
@@ -34,6 +35,20 @@ export function useDeleteCategory() {
     mutationFn: (id: number) => deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+    },
+  });
+}
+
+export function useReassignAndDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ fromId, toId }: { fromId: number; toId: number }) =>
+      reassignAndDeleteCategory(fromId, toId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
     },
   });
