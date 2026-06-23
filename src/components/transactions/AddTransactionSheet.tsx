@@ -118,6 +118,9 @@ export default function AddTransactionSheet({ visible, onClose, transaction }: P
       }
       setShowDatePicker(false);
       setShowAccountPicker(false);
+    } else {
+      // Pre-reset amount while modal is offscreen so next open starts with narrow TextInput
+      setForm((f) => ({ ...f, amount: '' }));
     }
   }, [visible, transaction, accounts]);
 
@@ -322,6 +325,7 @@ export default function AddTransactionSheet({ visible, onClose, transaction }: P
                   value={form.amount}
                   onChangeText={(v) => setForm((f) => ({ ...f, amount: v }))}
                   keyboardType="decimal-pad"
+                  contextMenuHidden
                   placeholder="0.00"
                   placeholderTextColor={colors.textFaint}
                   style={{

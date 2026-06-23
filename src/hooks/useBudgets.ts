@@ -12,8 +12,17 @@ export function useBudgets(year: number, month: number) {
 export function useSetBudgetDefault() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ categoryId, amount }: { categoryId: number; amount: number | null }) =>
-      setBudgetDefault(categoryId, amount),
+    mutationFn: ({
+      categoryId,
+      amount,
+      effectiveFromYear,
+      effectiveFromMonth,
+    }: {
+      categoryId: number;
+      amount: number | null;
+      effectiveFromYear?: number;
+      effectiveFromMonth?: number;
+    }) => setBudgetDefault(categoryId, amount, effectiveFromYear, effectiveFromMonth),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budgets'] }),
   });
 }

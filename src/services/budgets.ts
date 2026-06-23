@@ -13,7 +13,16 @@ export async function getBudgets(year: number, month: number): Promise<BudgetEnt
        c.icon  AS category_icon,
        bl.default_amount,
        bo.amount AS override_amount,
-       COALESCE(bo.amount, bl.default_amount) AS effective_amount,
+       COALESCE(
+         bo.amount,
+         CASE
+           WHEN bl.default_amount IS NULL THEN NULL
+           WHEN bl.effective_from_year IS NULL THEN bl.default_amount
+           WHEN ? > bl.effective_from_year THEN bl.default_amount
+           WHEN ? = bl.effective_from_year AND ? >= bl.effective_from_month THEN bl.default_amount
+           ELSE NULL
+         END
+       ) AS effective_amount,
        COALESCE(SUM(CASE WHEN t.amount < 0 THEN ABS(t.amount) ELSE 0 END), 0) AS spent
      FROM categories c
      LEFT JOIN budget_limits bl ON bl.category_id = c.id
@@ -26,19 +35,44 @@ export async function getBudgets(year: number, month: number): Promise<BudgetEnt
      WHERE c.type = 'expense'
      GROUP BY c.id
      ORDER BY c.name`,
-    [year, month, y, m],
+    [year, year, month, year, month, y, m],
   );
 }
 
-export async function setBudgetDefault(categoryId: number, amount: number | null): Promise<void> {
+export async function setBudgetDefault(
+  categoryId: number,
+  amount: number | null,
+  effectiveFromYear?: number,
+  effectiveFromMonth?: number,
+): Promise<void> {
   const db = getDb();
   if (amount === null) {
     db.runSync('DELETE FROM budget_limits WHERE category_id = ?', [categoryId]);
   } else {
+    const fromYear = effectiveFromYear ?? null;
+    const fromMonth = effectiveFromMonth ?? null;
     db.runSync(
-      `INSERT INTO budget_limits (category_id, default_amount) VALUES (?, ?)
-       ON CONFLICT(category_id) DO UPDATE SET default_amount = excluded.default_amount`,
-      [categoryId, amount],
+      `INSERT INTO budget_limits (category_id, default_amount, effective_from_year, effective_from_month)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(category_id) DO UPDATE SET
+         default_amount = excluded.default_amount,
+         effective_from_year = CASE
+           WHEN excluded.effective_from_year IS NULL THEN budget_limits.effective_from_year
+           WHEN budget_limits.effective_from_year IS NULL THEN excluded.effective_from_year
+           WHEN excluded.effective_from_year * 12 + excluded.effective_from_month
+                < budget_limits.effective_from_year * 12 + budget_limits.effective_from_month
+             THEN excluded.effective_from_year
+           ELSE budget_limits.effective_from_year
+         END,
+         effective_from_month = CASE
+           WHEN excluded.effective_from_year IS NULL THEN budget_limits.effective_from_month
+           WHEN budget_limits.effective_from_year IS NULL THEN excluded.effective_from_month
+           WHEN excluded.effective_from_year * 12 + excluded.effective_from_month
+                < budget_limits.effective_from_year * 12 + budget_limits.effective_from_month
+             THEN excluded.effective_from_month
+           ELSE budget_limits.effective_from_month
+         END`,
+      [categoryId, amount, fromYear, fromMonth],
     );
   }
 }
