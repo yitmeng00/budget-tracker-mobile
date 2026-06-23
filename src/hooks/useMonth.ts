@@ -23,7 +23,12 @@ export function useMonth() {
     }
   }
 
+  function jumpTo(y: number, m: number) {
+    setYear(y);
+    setMonth(m);
+  }
+
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth() + 1;
 
-  return { year, month, prev, next, isCurrentMonth };
+  return { year, month, prev, next, jumpTo, isCurrentMonth };
 }
