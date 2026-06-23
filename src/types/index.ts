@@ -35,6 +35,7 @@ export interface Transaction {
   category_id: number;
   amount: number; // positive = income, negative = expense
   note: string;
+  description: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM:SS
   category?: Category;
@@ -81,6 +82,7 @@ export interface TransactionFormData {
   category_id: number;
   amount: string;
   note: string;
+  description: string;
   date: string;
   time: string;
   type: TransactionType;

@@ -3,7 +3,7 @@ import type { Transaction } from '../types';
 
 const SELECT_TRANSACTIONS = `
   SELECT
-    t.id, t.account_id, t.category_id, t.amount, t.note, t.date, t.time,
+    t.id, t.account_id, t.category_id, t.amount, t.note, t.description, t.date, t.time,
     c.name  AS category_name,
     c.color AS category_color,
     c.icon  AS category_icon,
@@ -33,6 +33,7 @@ function mapTransaction(row: RawTransaction): Transaction {
     category_id: row.category_id,
     amount: row.amount,
     note: row.note,
+    description: row.description,
     date: row.date,
     time: row.time,
     category: {
@@ -82,8 +83,16 @@ export async function createTransaction(
   let newId = 0;
   db.withTransactionSync(() => {
     const result = db.runSync(
-      'INSERT INTO transactions (account_id, category_id, amount, note, date, time) VALUES (?, ?, ?, ?, ?, ?)',
-      [data.account_id, data.category_id, data.amount, data.note, data.date, data.time],
+      'INSERT INTO transactions (account_id, category_id, amount, note, description, date, time) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [
+        data.account_id,
+        data.category_id,
+        data.amount,
+        data.note,
+        data.description,
+        data.date,
+        data.time,
+      ],
     );
     newId = result.lastInsertRowId;
     db.runSync('UPDATE accounts SET balance = balance + ? WHERE id = ?', [
@@ -117,8 +126,17 @@ export async function updateTransaction(
       data.account_id,
     ]);
     db.runSync(
-      'UPDATE transactions SET account_id=?, category_id=?, amount=?, note=?, date=?, time=? WHERE id=?',
-      [data.account_id, data.category_id, data.amount, data.note, data.date, data.time, id],
+      'UPDATE transactions SET account_id=?, category_id=?, amount=?, note=?, description=?, date=?, time=? WHERE id=?',
+      [
+        data.account_id,
+        data.category_id,
+        data.amount,
+        data.note,
+        data.description,
+        data.date,
+        data.time,
+        id,
+      ],
     );
   });
 }
