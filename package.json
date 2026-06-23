@@ -1,0 +1,35 @@
+{
+  "name": "budget-tracker-mobile",
+  "main": "expo-router/entry",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "expo": "~56.0.12",
+    "expo-font": "~56.0.7",
+    "expo-haptics": "~56.0.3",
+    "expo-linking": "~56.0.14",
+    "expo-router": "~56.2.11",
+    "expo-sqlite": "~56.0.5",
+    "expo-status-bar": "~56.0.4",
+    "lucide-react-native": "^1.21.0",
+    "nativewind": "^4.1.23",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-gesture-handler": "~2.31.1",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.8",
+    "tailwindcss": "3.4.17"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "typescript": "~6.0.3"
+  }
+}
