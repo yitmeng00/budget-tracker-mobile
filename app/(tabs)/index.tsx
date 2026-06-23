@@ -5,11 +5,9 @@ import { Plus } from 'lucide-react-native';
 import { useMonth } from '@/hooks/useMonth';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useSettings } from '@/hooks/useSettings';
-import { useYearlySummary } from '@/hooks/useStats';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import MonthHeader, { YearHeader } from '@/components/ui/MonthHeader';
 import ViewToggle from '@/components/ui/ViewToggle';
-import SummaryCards from '@/components/transactions/SummaryCards';
 import DailyView from '@/components/transactions/DailyView';
 import CalendarView from '@/components/transactions/CalendarView';
 import MonthlyView from '@/components/transactions/MonthlyView';
@@ -27,13 +25,6 @@ export default function TransactionsScreen() {
 
   const currentYear = new Date().getFullYear();
   const [yearView, setYearView] = useState(currentYear);
-  const { data: yearlySummary = { income: 0, expenses: 0 } } = useYearlySummary(yearView);
-
-  const income = transactions.filter((t) => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
-  const expenses = transactions
-    .filter((t) => t.amount < 0)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-  const net = income - expenses;
 
   function openAdd() {
     setEditingTransaction(undefined);
@@ -51,7 +42,6 @@ export default function TransactionsScreen() {
   }
 
   const isMonthly = viewMode === 'monthly';
-  const yearlyNet = yearlySummary.income - yearlySummary.expenses;
 
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
@@ -64,17 +54,6 @@ export default function TransactionsScreen() {
         />
       ) : (
         <MonthHeader year={year} month={month} onPrev={prev} onNext={next} onJump={jumpTo} />
-      )}
-
-      {isMonthly ? (
-        <SummaryCards
-          income={yearlySummary.income}
-          expenses={yearlySummary.expenses}
-          net={yearlyNet}
-          settings={settings}
-        />
-      ) : (
-        <SummaryCards income={income} expenses={expenses} net={net} settings={settings} />
       )}
 
       <ViewToggle value={viewMode} onChange={setViewMode} />
@@ -93,7 +72,9 @@ export default function TransactionsScreen() {
         />
       )}
 
-      {viewMode === 'monthly' && <MonthlyView year={yearView} settings={settings} />}
+      {viewMode === 'monthly' && (
+        <MonthlyView year={yearView} settings={settings} onPressTransaction={openEdit} />
+      )}
 
       <TouchableOpacity
         onPress={openAdd}

@@ -1,11 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import {
+  getMonthsTrend,
   getMonthlySummaries,
   getCategoryStats,
   getYearlySummary,
   getMonthsForYear,
   getYearlyCategoryStats,
 } from '../services/stats';
+
+export function useMonthsTrend(year: number, month: number, count: number) {
+  return useQuery({
+    queryKey: ['stats', 'trend', year, month, count],
+    queryFn: () => getMonthsTrend(year, month, count),
+  });
+}
 
 export function useMonthlySummaries(count: number) {
   return useQuery({
