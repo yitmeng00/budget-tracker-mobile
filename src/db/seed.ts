@@ -60,6 +60,33 @@ export function seedSampleData(db: SQLite.SQLiteDatabase): void {
     );
   }
 
+  // Seed default budget limits if none exist
+  const budgetCount = db.getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM budget_limits');
+  if (budgetCount && budgetCount.n === 0) {
+    const catId = (name: string): number | null =>
+      db.getFirstSync<{ id: number }>('SELECT id FROM categories WHERE name = ?', [name])?.id ??
+      null;
+
+    const defaults: [string, number][] = [
+      ['Food & Drinks', 600],
+      ['Transport', 200],
+      ['Shopping', 400],
+      ['Entertainment', 150],
+      ['Health', 200],
+      ['Bills & Utilities', 500],
+    ];
+
+    for (const [name, amount] of defaults) {
+      const id = catId(name);
+      if (id) {
+        db.runSync(
+          'INSERT OR IGNORE INTO budget_limits (category_id, default_amount) VALUES (?, ?)',
+          [id, amount],
+        );
+      }
+    }
+  }
+
   const hasTransactions = db.getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM transactions');
   if (hasTransactions && hasTransactions.n > 0) return;
 

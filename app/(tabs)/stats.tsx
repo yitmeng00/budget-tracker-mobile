@@ -17,7 +17,8 @@ import TrendChart from '@/components/stats/TrendChart';
 import DonutChart from '@/components/stats/DonutChart';
 import { colors } from '@/lib/colors';
 import { formatCurrency } from '@/lib/currency';
-import type { CategoryStats, UserSettings } from '@/types';
+import { useBudgets } from '@/hooks/useBudgets';
+import type { BudgetEntry, CategoryStats, UserSettings } from '@/types';
 
 type Period = 'month' | 'year';
 
@@ -28,6 +29,9 @@ export default function StatsScreen() {
   const [yearView, setYearView] = useState(currentYear);
 
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
+
+  // Budget (monthly only)
+  const { data: budgets = [] } = useBudgets(year, month);
 
   // Month period
   const { data: trend = [] } = useMonthsTrend(year, month, 6);
@@ -160,8 +164,137 @@ export default function StatsScreen() {
             <CategoryBreakdown items={incCats} settings={settings} />
           </>
         )}
+
+        {/* Budget (monthly view only) */}
+        {period === 'month' && budgets.some((b) => b.effective_amount !== null) && (
+          <>
+            <SectionLabel text="Budget" />
+            <BudgetBreakdown budgets={budgets} settings={settings} />
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+function BudgetBreakdown({
+  budgets,
+  settings,
+}: {
+  budgets: BudgetEntry[];
+  settings: UserSettings;
+}) {
+  const budgeted = budgets.filter((b) => b.effective_amount !== null);
+  const overCount = budgeted.filter((b) => b.spent > (b.effective_amount ?? 0)).length;
+
+  return (
+    <View
+      style={{
+        marginHorizontal: 16,
+        backgroundColor: colors.surface,
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 16,
+      }}
+    >
+      {/* Summary row */}
+      {overCount > 0 && (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            backgroundColor: '#fef2f2',
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+          }}
+        >
+          <Text style={{ fontSize: 13, color: colors.expense, fontWeight: '600' }}>
+            {overCount} {overCount === 1 ? 'category' : 'categories'} over budget
+          </Text>
+        </View>
+      )}
+
+      {budgeted.map((entry, idx) => {
+        const budget = entry.effective_amount ?? 0;
+        const pct = budget > 0 ? entry.spent / budget : 0;
+        const clamped = Math.min(pct, 1);
+        const isOver = entry.spent > budget;
+        const barColor = isOver ? colors.expense : pct >= 0.8 ? '#f59e0b' : colors.income;
+
+        return (
+          <View
+            key={entry.category_id}
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 11,
+              borderTopWidth: idx === 0 ? 0 : 1,
+              borderTopColor: colors.border,
+            }}
+          >
+            {/* Row 1: dot + name + over badge + amounts */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: entry.category_color,
+                  marginRight: 8,
+                }}
+              />
+              <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
+                {entry.category_name}
+              </Text>
+              {isOver && (
+                <View
+                  style={{
+                    backgroundColor: '#fef2f2',
+                    borderRadius: 6,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    marginRight: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 10, fontWeight: '700', color: colors.expense }}>
+                    OVER
+                  </Text>
+                </View>
+              )}
+              <Text style={{ fontSize: 12, color: isOver ? colors.expense : colors.textMuted }}>
+                {formatCurrency(entry.spent, settings)}
+                <Text style={{ color: colors.textFaint }}>
+                  {' '}
+                  / {formatCurrency(budget, settings)}
+                </Text>
+              </Text>
+            </View>
+
+            {/* Row 2: progress bar */}
+            <View style={{ paddingLeft: 16 }}>
+              <View
+                style={{
+                  height: 5,
+                  backgroundColor: colors.bg,
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                }}
+              >
+                <View
+                  style={{
+                    width: `${clamped * 100}%`,
+                    height: '100%',
+                    backgroundColor: barColor,
+                    borderRadius: 3,
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 

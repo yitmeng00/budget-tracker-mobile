@@ -30,9 +30,20 @@ import {
   useUpdateAccountGroup,
   useDeleteAccountGroup,
 } from '@/hooks/useAccounts';
+import { useBudgets, useSetBudgetDefault, useSetBudgetOverride } from '@/hooks/useBudgets';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { colors, categoryColors } from '@/lib/colors';
-import type { Category, Account, AccountGroup, UserSettings, WeekDay, UnitPosition } from '@/types';
+import { formatCurrency } from '@/lib/currency';
+import { MONTH_NAMES, MONTH_SHORT } from '@/lib/constants';
+import type {
+  Category,
+  Account,
+  AccountGroup,
+  BudgetEntry,
+  UserSettings,
+  WeekDay,
+  UnitPosition,
+} from '@/types';
 
 function autoColor(name: string): string {
   let h = 0;
@@ -60,6 +71,7 @@ const WEEK_DAYS: WeekDay[] = ['Sunday', 'Monday', 'Saturday'];
 type CatModalState = { open: boolean; cat?: Category; defaultType?: 'expense' | 'income' };
 type AcctModalState = { open: boolean; acct?: Account };
 type AcctGroupModalState = { open: boolean; group?: AccountGroup };
+type BudgetModalState = { open: boolean; entry?: BudgetEntry; year?: number; month?: number };
 type ReassignModalState = { open: boolean; cat?: Category; txCount?: number };
 
 export default function SettingsScreen() {
@@ -72,10 +84,33 @@ export default function SettingsScreen() {
   const deleteAccount = useDeleteAccount();
   const deleteAccountGroup = useDeleteAccountGroup();
 
+  const now = new Date();
+  const [budgetYear, setBudgetYear] = useState(now.getFullYear());
+  const [budgetMonth, setBudgetMonth] = useState(now.getMonth() + 1);
+  const { data: budgets = [] } = useBudgets(budgetYear, budgetMonth);
+
+  function prevBudgetMonth() {
+    if (budgetMonth === 1) {
+      setBudgetYear((y) => y - 1);
+      setBudgetMonth(12);
+    } else setBudgetMonth((m) => m - 1);
+  }
+  function nextBudgetMonth() {
+    if (budgetMonth === 12) {
+      setBudgetYear((y) => y + 1);
+      setBudgetMonth(1);
+    } else setBudgetMonth((m) => m + 1);
+  }
+  function jumpBudgetMonth(y: number, m: number) {
+    setBudgetYear(y);
+    setBudgetMonth(m);
+  }
+
   const [currencyModal, setCurrencyModal] = useState(false);
   const [catModal, setCatModal] = useState<CatModalState>({ open: false });
   const [acctModal, setAcctModal] = useState<AcctModalState>({ open: false });
   const [acctGroupModal, setAcctGroupModal] = useState<AcctGroupModalState>({ open: false });
+  const [budgetModal, setBudgetModal] = useState<BudgetModalState>({ open: false });
   const [reassignModal, setReassignModal] = useState<ReassignModalState>({ open: false });
 
   const expCats = categories.filter((c) => c.type === 'expense');
@@ -317,6 +352,75 @@ export default function SettingsScreen() {
           );
         })()}
 
+        {/* ── Budgets ── */}
+        <SectionLabel text="Budgets" />
+
+        <BudgetMonthNav
+          year={budgetYear}
+          month={budgetMonth}
+          onPrev={prevBudgetMonth}
+          onNext={nextBudgetMonth}
+          onJump={jumpBudgetMonth}
+        />
+
+        <SectionCard>
+          {budgets.length === 0 ? (
+            <EmptyRow text="No expense categories" />
+          ) : (
+            budgets.map((entry, idx) => (
+              <View key={entry.category_id}>
+                {idx > 0 && <RowDivider />}
+                <TouchableOpacity
+                  onPress={() =>
+                    setBudgetModal({ open: true, entry, year: budgetYear, month: budgetMonth })
+                  }
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, color: colors.textPrimary }}>
+                      {entry.category_name}
+                    </Text>
+                    {entry.override_amount !== null && entry.override_amount !== undefined && (
+                      <Text style={{ fontSize: 11, color: colors.accent, marginTop: 2 }}>
+                        This month only
+                      </Text>
+                    )}
+                  </View>
+                  {entry.effective_amount ? (
+                    <View style={{ alignItems: 'flex-end', marginRight: 6 }}>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontWeight: '500',
+                          color:
+                            entry.spent > entry.effective_amount
+                              ? colors.expense
+                              : colors.textMuted,
+                        }}
+                      >
+                        {formatCurrency(entry.spent, settings)} spent
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.textFaint, marginTop: 1 }}>
+                        of {formatCurrency(entry.effective_amount, settings)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={{ fontSize: 14, color: colors.textFaint, marginRight: 6 }}>
+                      Not set
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 18, color: colors.textFaint }}>›</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </SectionCard>
+
         {/* ── About ── */}
         <SectionLabel text="About" />
         <SectionCard>
@@ -351,6 +455,13 @@ export default function SettingsScreen() {
         groups={groups}
         onClose={() => setAcctModal({ open: false })}
       />
+      <BudgetSettingsModal
+        visible={budgetModal.open}
+        entry={budgetModal.entry}
+        year={budgetModal.year ?? budgetYear}
+        month={budgetModal.month ?? budgetMonth}
+        onClose={() => setBudgetModal({ open: false })}
+      />
       <ReassignModal
         visible={reassignModal.open}
         category={reassignModal.cat}
@@ -359,6 +470,171 @@ export default function SettingsScreen() {
         onClose={() => setReassignModal({ open: false })}
       />
     </SafeAreaView>
+  );
+}
+
+// ─── Budget month nav ─────────────────────────────────────────────────────────
+
+function BudgetMonthNav({
+  year,
+  month,
+  onPrev,
+  onNext,
+  onJump,
+}: {
+  year: number;
+  month: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onJump: (year: number, month: number) => void;
+}) {
+  const [picking, setPicking] = useState(false);
+  const [pickYear, setPickYear] = useState(year);
+
+  function openPicker() {
+    setPickYear(year);
+    setPicking(true);
+  }
+
+  function selectMonth(m: number) {
+    onJump(pickYear, m);
+    setPicking(false);
+  }
+
+  const now = new Date();
+  const isCurrentMonth = (y: number, m: number) =>
+    y === now.getFullYear() && m === now.getMonth() + 1;
+
+  return (
+    <>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginHorizontal: 16,
+          marginBottom: 8,
+          backgroundColor: colors.surface,
+          borderRadius: 12,
+          paddingHorizontal: 8,
+          paddingVertical: 6,
+        }}
+      >
+        <TouchableOpacity onPress={onPrev} hitSlop={12} style={{ padding: 4 }}>
+          <Text style={{ fontSize: 20, color: colors.textMuted }}>‹</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={openPicker} hitSlop={8}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
+            {MONTH_NAMES[month - 1]} {year}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onNext} hitSlop={12} style={{ padding: 4 }}>
+          <Text style={{ fontSize: 20, color: colors.textMuted }}>›</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        transparent
+        visible={picking}
+        animationType="fade"
+        onRequestClose={() => setPicking(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          activeOpacity={1}
+          onPress={() => setPicking(false)}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{ backgroundColor: colors.surface, borderRadius: 20, padding: 20, width: 304 }}
+          >
+            {/* Year nav */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 16,
+              }}
+            >
+              <TouchableOpacity onPress={() => setPickYear((y) => y - 1)} hitSlop={12}>
+                <Text style={{ fontSize: 20, color: colors.textMuted }}>‹</Text>
+              </TouchableOpacity>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: colors.textPrimary }}>
+                {pickYear}
+              </Text>
+              <TouchableOpacity onPress={() => setPickYear((y) => y + 1)} hitSlop={12}>
+                <Text style={{ fontSize: 20, color: colors.textMuted }}>›</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Month grid */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {MONTH_SHORT.map((name, i) => {
+                const m = i + 1;
+                const isSelected = m === month && pickYear === year;
+                const isCurrent = isCurrentMonth(pickYear, m);
+                return (
+                  <TouchableOpacity
+                    key={m}
+                    onPress={() => selectMonth(m)}
+                    style={{
+                      width: 60,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      alignItems: 'center',
+                      backgroundColor: isSelected
+                        ? colors.accent
+                        : isCurrent
+                          ? colors.accentSoft
+                          : colors.bg,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: isSelected || isCurrent ? '600' : '400',
+                        color: isSelected
+                          ? 'white'
+                          : isCurrent
+                            ? colors.accent
+                            : colors.textPrimary,
+                      }}
+                    >
+                      {name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* This Month shortcut */}
+            <TouchableOpacity
+              onPress={() => {
+                onJump(now.getFullYear(), now.getMonth() + 1);
+                setPicking(false);
+              }}
+              style={{
+                marginTop: 16,
+                paddingVertical: 11,
+                borderRadius: 12,
+                alignItems: 'center',
+                backgroundColor: colors.bg,
+              }}
+            >
+              <Text style={{ fontSize: 14, fontWeight: '600', color: colors.accent }}>
+                This Month
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
@@ -980,6 +1256,188 @@ function AccountModal({
               </>
             )}
           </ScrollView>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+// ─── Budget settings modal ────────────────────────────────────────────────────
+
+function BudgetSettingsModal({
+  visible,
+  entry,
+  year,
+  month,
+  onClose,
+}: {
+  visible: boolean;
+  entry?: BudgetEntry;
+  year: number;
+  month: number;
+  onClose: () => void;
+}) {
+  const setDefault = useSetBudgetDefault();
+  const setOverride = useSetBudgetOverride();
+
+  const hasOverride = entry?.override_amount !== null && entry?.override_amount !== undefined;
+  const [amount, setAmount] = useState('');
+  const [scope, setScope] = useState<'onwards' | 'month'>('onwards');
+
+  const [lastEntry, setLastEntry] = useState<BudgetEntry | undefined>();
+  if (entry !== lastEntry) {
+    setLastEntry(entry);
+    setAmount(entry?.effective_amount ? String(entry.effective_amount) : '');
+    // Pre-select "This month only" if there's already a monthly override
+    setScope(hasOverride ? 'month' : 'onwards');
+  }
+
+  function handleSave() {
+    if (!entry) return;
+    const parsed = parseFloat(amount);
+    if (isNaN(parsed) || parsed <= 0) return;
+    if (scope === 'onwards') {
+      // Lock this month in + update default so future months inherit the new amount
+      setOverride.mutate({ categoryId: entry.category_id, year, month, amount: parsed });
+      setDefault.mutate({ categoryId: entry.category_id, amount: parsed });
+    } else {
+      // This month only — save override, leave default unchanged
+      setOverride.mutate({ categoryId: entry.category_id, year, month, amount: parsed });
+    }
+    onClose();
+  }
+
+  function handleRemove() {
+    if (!entry) return;
+    if (hasOverride) {
+      setOverride.mutate({ categoryId: entry.category_id, year, month, amount: null });
+    } else {
+      setDefault.mutate({ categoryId: entry.category_id, amount: null });
+    }
+    onClose();
+  }
+
+  const canSave = !isNaN(parseFloat(amount)) && parseFloat(amount) > 0;
+  const hasBudget = entry?.effective_amount !== null && entry?.effective_amount !== undefined;
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              backgroundColor: colors.surface,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            }}
+          >
+            <TouchableOpacity onPress={onClose}>
+              <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+            </TouchableOpacity>
+            <Text
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                fontSize: 17,
+                fontWeight: '600',
+                color: colors.textPrimary,
+              }}
+            >
+              {entry?.category_name}
+            </Text>
+            <TouchableOpacity onPress={handleSave} disabled={!canSave}>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: '600',
+                  color: canSave ? colors.accent : colors.textFaint,
+                }}
+              >
+                Save
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ padding: 16 }}>
+            <Text style={fieldLabel}>Budget Amount</Text>
+            <TextInput
+              value={amount}
+              onChangeText={setAmount}
+              placeholder="0.00"
+              placeholderTextColor={colors.textFaint}
+              keyboardType="decimal-pad"
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSave}
+              style={inputStyle}
+            />
+
+            <Text style={[fieldLabel, { marginTop: 20 }]}>Apply to</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                backgroundColor: colors.surface,
+                borderRadius: 10,
+                padding: 3,
+              }}
+            >
+              {(['onwards', 'month'] as const).map((s) => {
+                const active = scope === s;
+                return (
+                  <TouchableOpacity
+                    key={s}
+                    onPress={() => setScope(s)}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 8,
+                      borderRadius: 7,
+                      alignItems: 'center',
+                      backgroundColor: active ? colors.bg : 'transparent',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: active ? '600' : '400',
+                        color: active ? colors.textPrimary : colors.textMuted,
+                      }}
+                    >
+                      {s === 'onwards' ? `${MONTH_NAMES[month - 1]} onwards` : 'This month only'}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 8 }}>
+              {scope === 'onwards'
+                ? `Applies from ${MONTH_NAMES[month - 1]} onwards. Earlier months are unaffected.`
+                : `Only affects ${MONTH_NAMES[month - 1]} ${year}. Other months keep their budget.`}
+            </Text>
+
+            {hasBudget && (
+              <TouchableOpacity
+                onPress={handleRemove}
+                style={{
+                  marginTop: 32,
+                  paddingVertical: 14,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  backgroundColor: '#fef2f2',
+                }}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.expense }}>
+                  {hasOverride ? "Remove This Month's Override" : 'Remove Budget'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </Modal>
