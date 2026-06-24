@@ -17,9 +17,11 @@ export default function RootLayout() {
   useEffect(() => {
     // Open DB and run schema + seed synchronously on first mount
     getDb();
-    const created = processRecurringTransactions();
-    if (created > 0) {
-      queryClient.invalidateQueries();
+    try {
+      const created = processRecurringTransactions();
+      if (created > 0) queryClient.invalidateQueries();
+    } catch {
+      // Background processing failure — don't crash the app
     }
   }, []);
 

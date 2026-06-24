@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getSettings, updateSettings } from '../services/settings';
 import { DEFAULT_SETTINGS } from '../lib/settings';
@@ -16,5 +17,6 @@ export function useUpdateSettings() {
   return useMutation({
     mutationFn: (patch: Partial<UserSettings>) => updateSettings(patch),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['settings'] }),
+    onError: () => Alert.alert('Error', "Couldn't save settings. Please try again."),
   });
 }

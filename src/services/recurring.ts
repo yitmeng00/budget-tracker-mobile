@@ -202,37 +202,41 @@ export function processRecurringTransactions(): number {
   let created = 0;
 
   for (const rule of rules) {
-    const startDate = parseDate(rule.start_date);
-    const lastCreated = rule.last_created_date ? parseDate(rule.last_created_date) : null;
-    const dueDates = computeDueDates(
-      rule.frequency as RecurringFrequency,
-      startDate,
-      lastCreated,
-      today,
-    );
+    try {
+      const startDate = parseDate(rule.start_date);
+      const lastCreated = rule.last_created_date ? parseDate(rule.last_created_date) : null;
+      const dueDates = computeDueDates(
+        rule.frequency as RecurringFrequency,
+        startDate,
+        lastCreated,
+        today,
+      );
 
-    for (const dueDate of dueDates) {
-      const dateStr = toDateStr(dueDate);
-      db.withTransactionSync(() => {
-        db.runSync(
-          `INSERT INTO transactions (account_id, category_id, amount, note, description, date, time)
-           VALUES (?, ?, ?, ?, ?, ?, '00:00:00')`,
-          [rule.account_id, rule.category_id, rule.amount, rule.note, rule.description, dateStr],
-        );
-        db.runSync('UPDATE accounts SET balance = balance + ? WHERE id = ?', [
-          rule.amount,
-          rule.account_id,
+      for (const dueDate of dueDates) {
+        const dateStr = toDateStr(dueDate);
+        db.withTransactionSync(() => {
+          db.runSync(
+            `INSERT INTO transactions (account_id, category_id, amount, note, description, date, time)
+             VALUES (?, ?, ?, ?, ?, ?, '00:00:00')`,
+            [rule.account_id, rule.category_id, rule.amount, rule.note, rule.description, dateStr],
+          );
+          db.runSync('UPDATE accounts SET balance = balance + ? WHERE id = ?', [
+            rule.amount,
+            rule.account_id,
+          ]);
+        });
+        created++;
+      }
+
+      if (dueDates.length > 0) {
+        const latestDate = toDateStr(dueDates[dueDates.length - 1]);
+        db.runSync('UPDATE recurring_rules SET last_created_date=? WHERE id=?', [
+          latestDate,
+          rule.id,
         ]);
-      });
-      created++;
-    }
-
-    if (dueDates.length > 0) {
-      const latestDate = toDateStr(dueDates[dueDates.length - 1]);
-      db.runSync('UPDATE recurring_rules SET last_created_date=? WHERE id=?', [
-        latestDate,
-        rule.id,
-      ]);
+      }
+    } catch {
+      // Skip this rule and continue processing others
     }
   }
 

@@ -189,7 +189,7 @@ export default function AddTransactionSheet({
       }
       handleClose();
     } catch {
-      Alert.alert('Error', 'Failed to save transaction.');
+      Alert.alert('Error', "Couldn't save this transaction. Please try again.");
     }
   }
 
@@ -205,7 +205,7 @@ export default function AddTransactionSheet({
             await deleteTx.mutateAsync(transaction.id);
             handleClose();
           } catch {
-            Alert.alert('Error', 'Failed to delete transaction.');
+            Alert.alert('Error', "Couldn't delete this transaction. Please try again.");
           }
         },
       },

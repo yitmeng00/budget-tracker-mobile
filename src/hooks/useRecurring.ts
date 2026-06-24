@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getRecurringRules,
@@ -7,6 +8,12 @@ import {
 } from '../services/recurring';
 
 const KEY = ['recurring_rules'];
+
+function showError(err: unknown, fallback: string) {
+  const msg = err instanceof Error ? err.message : '';
+  const isOurs = msg && !/^(sqlite|SqliteError|SQLITE)/i.test(msg);
+  Alert.alert('Error', isOurs ? msg : fallback);
+}
 
 export function useRecurringRules() {
   return useQuery({ queryKey: KEY, queryFn: getRecurringRules });
@@ -19,6 +26,7 @@ export function useCreateRecurringRule() {
       createRecurringRule(data);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onError: (err) => showError(err, "Couldn't save this recurring rule. Please try again."),
   });
 }
 
@@ -35,6 +43,7 @@ export function useUpdateRecurringRule() {
       updateRecurringRule(id, data);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onError: (err) => showError(err, "Couldn't update this recurring rule. Please try again."),
   });
 }
 
@@ -45,5 +54,6 @@ export function useDeleteRecurringRule() {
       deleteRecurringRule(id);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onError: (err) => showError(err, "Couldn't delete this recurring rule. Please try again."),
   });
 }
