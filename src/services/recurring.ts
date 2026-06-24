@@ -1,4 +1,5 @@
 import { getDb } from '../db/client';
+import { formatDateISO, parseDate } from '../lib/date';
 import type { RecurringFrequency, RecurringRule } from '../types';
 
 type RawRule = Omit<RecurringRule, 'active'> & { active: number };
@@ -86,16 +87,6 @@ export function updateRecurringRule(
 export function deleteRecurringRule(id: number): void {
   const db = getDb();
   db.runSync('DELETE FROM recurring_rules WHERE id = ?', [id]);
-}
-
-// ─── Date helpers ─────────────────────────────────────────────────────────────
-
-function toDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function parseDate(s: string): Date {
-  return new Date(s + 'T00:00:00');
 }
 
 function addDays(d: Date, n: number): Date {
@@ -213,7 +204,7 @@ export function processRecurringTransactions(): number {
       );
 
       for (const dueDate of dueDates) {
-        const dateStr = toDateStr(dueDate);
+        const dateStr = formatDateISO(dueDate);
         db.withTransactionSync(() => {
           db.runSync(
             `INSERT INTO transactions (account_id, category_id, amount, note, description, date, time)
@@ -229,7 +220,7 @@ export function processRecurringTransactions(): number {
       }
 
       if (dueDates.length > 0) {
-        const latestDate = toDateStr(dueDates[dueDates.length - 1]);
+        const latestDate = formatDateISO(dueDates[dueDates.length - 1]);
         db.runSync('UPDATE recurring_rules SET last_created_date=? WHERE id=?', [
           latestDate,
           rule.id,

@@ -1,4 +1,3 @@
-import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getAccounts,
@@ -11,14 +10,8 @@ import {
   updateAccountGroup,
   deleteAccountGroup,
 } from '../services/accounts';
+import { showError } from './utils';
 import type { Account } from '../types';
-
-function showError(err: unknown, fallback: string) {
-  const msg = err instanceof Error ? err.message : '';
-  // Our explicit business-rule errors are plain English; SQLite errors contain 'sqlite' or start with caps keywords
-  const isOurs = msg && !/^(sqlite|SqliteError|SQLITE)/i.test(msg);
-  Alert.alert('Error', isOurs ? msg : fallback);
-}
 
 export function useAccounts() {
   return useQuery({ queryKey: ['accounts'], queryFn: getAccounts });

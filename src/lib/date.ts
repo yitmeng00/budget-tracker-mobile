@@ -1,5 +1,9 @@
 import { DAY_NAMES, MONTH_SHORT } from './constants';
 
+export function parseDate(s: string): Date {
+  return new Date(s + 'T00:00:00');
+}
+
 export function formatDateISO(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Modal,
   View,
@@ -13,6 +13,9 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
+import { formatDateISO, parseDate } from '@/lib/date';
 import { useCategories } from '@/hooks/useCategories';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useSettings } from '@/hooks/useSettings';
@@ -31,44 +34,9 @@ interface Props {
   rule?: RecurringRule;
 }
 
-const FREQUENCIES: { value: RecurringFrequency; label: string }[] = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'biweekly', label: 'Every 2 weeks' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'end_of_month', label: 'End of month' },
-  { value: 'bimonthly', label: 'Every 2 months' },
-  { value: 'annually', label: 'Annually' },
-];
-
-function toDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function parseDate(s: string): Date {
-  return new Date(s + 'T00:00:00');
-}
-
-function formatDisplayDate(s: string): string {
-  const d = parseDate(s);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function frequencyDescription(freq: RecurringFrequency, startDate: string): string {
-  const labels: Record<RecurringFrequency, string> = {
-    daily: 'every day',
-    weekly: 'every week',
-    biweekly: 'every 2 weeks',
-    monthly: 'every month',
-    end_of_month: 'on the last day of each month',
-    bimonthly: 'every 2 months',
-    annually: 'every year',
-  };
-  return `Runs ${labels[freq]}, starting ${formatDisplayDate(startDate)}`;
-}
-
 export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
   const colors = useColors();
+  const t = useStrings();
   const isEdit = !!rule;
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
@@ -77,15 +45,44 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
   const updateRule = useUpdateRecurringRule();
   const deleteRule = useDeleteRecurringRule();
 
-  const backdrop = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(800)).current;
+  const { backdrop, translateY, close } = useBottomSheet(visible, onClose);
+
+  const language = settings.language;
+  const LOCALE_MAP: Record<string, string> = {
+    en: 'en-US',
+    ms: 'ms-MY',
+    'zh-hans': 'zh-Hans-CN',
+    'zh-hant': 'zh-Hant-TW',
+  };
+  const frequencies: { value: RecurringFrequency; label: string }[] = [
+    { value: 'daily', label: t.freqDaily },
+    { value: 'weekly', label: t.freqWeekly },
+    { value: 'biweekly', label: t.freqBiweekly },
+    { value: 'monthly', label: t.freqMonthly },
+    { value: 'end_of_month', label: t.freqEndOfMonth },
+    { value: 'bimonthly', label: t.freqBimonthly },
+    { value: 'annually', label: t.freqAnnually },
+  ];
+  function formatDisplayDate(s: string): string {
+    return parseDate(s).toLocaleDateString(LOCALE_MAP[language], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+  function frequencyDescription(freq: RecurringFrequency, startDate: string): string {
+    const freqLabel = frequencies.find((f) => f.value === freq)?.label ?? freq;
+    return t.recurringRunsFrom
+      .replace('{freq}', freqLabel)
+      .replace('{date}', formatDisplayDate(startDate));
+  }
 
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [accountId, setAccountId] = useState<number | null>(null);
   const [frequency, setFrequency] = useState<RecurringFrequency>('monthly');
-  const [startDate, setStartDate] = useState(toDateStr(new Date()));
+  const [startDate, setStartDate] = useState(formatDateISO(new Date()));
   const [note, setNote] = useState('');
   const [description, setDescription] = useState('');
   const [active, setActive] = useState(true);
@@ -113,7 +110,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
       setCategoryId(null);
       setAccountId(accounts[0]?.id ?? null);
       setFrequency('monthly');
-      setStartDate(toDateStr(new Date()));
+      setStartDate(formatDateISO(new Date()));
       setNote('');
       setDescription('');
       setActive(true);
@@ -124,32 +121,8 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
 
   function handleClose() {
     setShowDatePicker(false);
-    Animated.parallel([
-      Animated.timing(backdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
+    close();
   }
-
-  useEffect(() => {
-    if (visible) {
-      backdrop.setValue(0);
-      translateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(backdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
 
   function handleTypeChange(t: TransactionType) {
     setType(t);
@@ -161,19 +134,19 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
   async function handleSave() {
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a valid amount.');
+      Alert.alert(t.invalidAmountTitle, t.invalidAmountMsg);
       return;
     }
     if (!categoryId) {
-      Alert.alert('Select category', 'Please select a category.');
+      Alert.alert(t.selectCategoryTitle, t.selectCategoryMsg);
       return;
     }
     if (!accountId) {
-      Alert.alert('Select account', 'Please select an account.');
+      Alert.alert(t.selectAccountTitle, t.selectAccountMsg);
       return;
     }
     if (!note.trim()) {
-      Alert.alert('Note required', 'Please add a note.');
+      Alert.alert(t.noteRequiredTitle, t.noteRequiredMsg);
       return;
     }
 
@@ -202,10 +175,10 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
 
   function handleDelete() {
     if (!rule) return;
-    Alert.alert('Delete rule', 'Delete this recurring rule?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t.deleteRuleTitle, t.deleteRuleMsg, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Delete',
+        text: t.delete,
         style: 'destructive',
         onPress: async () => {
           try {
@@ -271,7 +244,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
             }}
           >
             <Text style={{ fontSize: 17, fontWeight: '700', color: colors.textPrimary }}>
-              {isEdit ? 'Edit Recurring' : 'New Recurring'}
+              {isEdit ? t.editRecurring : t.addRecurring}
             </Text>
             <TouchableOpacity onPress={handleSave} disabled={!canSave}>
               <Text
@@ -281,7 +254,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                   color: canSave ? colors.accent : colors.textFaint,
                 }}
               >
-                Save
+                {t.save}
               </Text>
             </TouchableOpacity>
           </View>
@@ -379,7 +352,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                 letterSpacing: 0.8,
               }}
             >
-              Category <Text style={{ color: colors.expense }}>*</Text>
+              {t.categoryLabel} <Text style={{ color: colors.expense }}>*</Text>
             </Text>
             <View
               style={{
@@ -443,7 +416,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     marginBottom: 8,
                   }}
                 >
-                  Account <Text style={{ color: colors.expense }}>*</Text>
+                  {t.accountLabel} <Text style={{ color: colors.expense }}>*</Text>
                 </Text>
                 <ScrollView
                   horizontal
@@ -494,7 +467,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     marginBottom: 8,
                   }}
                 >
-                  Repeat
+                  {t.repeatLabel}
                 </Text>
                 <View
                   style={{
@@ -505,7 +478,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     gap: 8,
                   }}
                 >
-                  {FREQUENCIES.map((f) => {
+                  {frequencies.map((f) => {
                     const sel = frequency === f.value;
                     return (
                       <TouchableOpacity
@@ -549,7 +522,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     marginBottom: 8,
                   }}
                 >
-                  Starting from
+                  {t.startingFrom}
                 </Text>
                 <TouchableOpacity
                   onPress={() => setShowDatePicker((v) => !v)}
@@ -564,7 +537,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     {formatDisplayDate(startDate)}
                   </Text>
                   <Text style={{ fontSize: 13, color: colors.accent }}>
-                    {showDatePicker ? 'Done' : 'Change'}
+                    {showDatePicker ? t.done : t.change}
                   </Text>
                 </TouchableOpacity>
                 {showDatePicker && (
@@ -573,7 +546,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     mode="date"
                     display={Platform.OS === 'ios' ? 'inline' : 'default'}
                     onValueChange={(_event, date) => {
-                      setStartDate(toDateStr(date));
+                      setStartDate(formatDateISO(date));
                       if (Platform.OS === 'android') setShowDatePicker(false);
                     }}
                     style={{ marginHorizontal: 8, marginBottom: 8 }}
@@ -593,7 +566,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Note <Text style={{ color: colors.expense }}>*</Text>
+                  {t.noteLabel} <Text style={{ color: colors.expense }}>*</Text>
                 </Text>
                 <TextInput
                   value={note}
@@ -617,12 +590,12 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Description
+                  {t.descriptionLabel}
                 </Text>
                 <TextInput
                   value={description}
                   onChangeText={setDescription}
-                  placeholder="Optional"
+                  placeholder={t.optionalDetails}
                   placeholderTextColor={colors.textFaint}
                   returnKeyType="done"
                   style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}
@@ -639,7 +612,9 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                     paddingVertical: 14,
                   }}
                 >
-                  <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>Active</Text>
+                  <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
+                    {t.activeLabel}
+                  </Text>
                   <Switch
                     value={active}
                     onValueChange={setActive}
@@ -680,7 +655,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
                 }}
               >
                 <Text style={{ fontSize: 15, fontWeight: '600', color: colors.expense }}>
-                  Delete Rule
+                  {t.deleteRuleTitle}
                 </Text>
               </TouchableOpacity>
             )}

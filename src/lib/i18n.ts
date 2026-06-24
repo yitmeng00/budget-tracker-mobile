@@ -115,11 +115,21 @@ export type Strings = {
   freqEndOfMonth: string;
   freqBimonthly: string;
   freqAnnually: string;
+  addRecurring: string;
+  editRecurring: string;
+  recurringRunsFrom: string; // template: replace {freq} and {date}
+  deleteRuleTitle: string;
+  deleteRuleMsg: string;
+  repeatLabel: string;
+  startingFrom: string;
+  activeLabel: string;
+  change: string;
 
   // Data
   exportCSV: string;
   importCSV: string;
   importCSVDesc: string;
+  importFailed: string;
 
   // About
   version: string;
@@ -305,10 +315,20 @@ const en: Strings = {
   freqEndOfMonth: 'End of month',
   freqBimonthly: 'Every 2 months',
   freqAnnually: 'Annually',
+  addRecurring: 'New Recurring',
+  editRecurring: 'Edit Recurring',
+  recurringRunsFrom: 'Runs {freq}, starting {date}',
+  deleteRuleTitle: 'Delete rule',
+  deleteRuleMsg: 'Delete this recurring rule?',
+  repeatLabel: 'Repeat',
+  startingFrom: 'Starting from',
+  activeLabel: 'Active',
+  change: 'Change',
 
   exportCSV: 'Export CSV',
   importCSV: 'Import CSV',
   importCSVDesc: 'Date, Type, Category, Account, Amount, Note',
+  importFailed: 'Import Failed',
 
   version: 'Version',
 
@@ -484,10 +504,20 @@ const ms: Strings = {
   freqEndOfMonth: 'Akhir bulan',
   freqBimonthly: 'Setiap 2 bulan',
   freqAnnually: 'Tahunan',
+  addRecurring: 'Tambah Berulang',
+  editRecurring: 'Edit Berulang',
+  recurringRunsFrom: 'Berulang {freq}, bermula {date}',
+  deleteRuleTitle: 'Padam peraturan',
+  deleteRuleMsg: 'Padam peraturan berulang ini?',
+  repeatLabel: 'Ulang',
+  startingFrom: 'Bermula dari',
+  activeLabel: 'Aktif',
+  change: 'Tukar',
 
   exportCSV: 'Eksport CSV',
   importCSV: 'Import CSV',
   importCSVDesc: 'Tarikh, Jenis, Kategori, Akaun, Jumlah, Nota',
+  importFailed: 'Import Gagal',
 
   version: 'Versi',
 
@@ -675,10 +705,20 @@ const zhHans: Strings = {
   freqEndOfMonth: '月末',
   freqBimonthly: '每两月',
   freqAnnually: '每年',
+  addRecurring: '新增定期',
+  editRecurring: '编辑定期',
+  recurringRunsFrom: '{freq}，从 {date} 开始',
+  deleteRuleTitle: '删除规则',
+  deleteRuleMsg: '删除此定期规则？',
+  repeatLabel: '重复',
+  startingFrom: '开始于',
+  activeLabel: '启用',
+  change: '更改',
 
   exportCSV: '导出 CSV',
   importCSV: '导入 CSV',
   importCSVDesc: '日期、类型、分类、账户、金额、备注',
+  importFailed: '导入失败',
 
   version: '版本',
 
@@ -865,10 +905,20 @@ const zhHant: Strings = {
   freqEndOfMonth: '月末',
   freqBimonthly: '每兩月',
   freqAnnually: '每年',
+  addRecurring: '新增定期',
+  editRecurring: '編輯定期',
+  recurringRunsFrom: '{freq}，從 {date} 開始',
+  deleteRuleTitle: '刪除規則',
+  deleteRuleMsg: '刪除此定期規則？',
+  repeatLabel: '重複',
+  startingFrom: '開始於',
+  activeLabel: '啟用',
+  change: '更改',
 
   exportCSV: '匯出 CSV',
   importCSV: '匯入 CSV',
   importCSVDesc: '日期、類型、分類、帳戶、金額、備註',
+  importFailed: '匯入失敗',
 
   version: '版本',
 

@@ -1,8 +1,8 @@
-import { useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useCategories } from '@/hooks/useCategories';
 import { useColors } from '@/context/ThemeContext';
 import { useStrings } from '@/context/LanguageContext';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
 import type { TransactionFilters } from '@/types';
 
 interface Props {
@@ -21,36 +21,7 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
     { label: t.expense, value: 'expense' },
   ];
   const { data: categories = [] } = useCategories();
-  const backdrop = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(backdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      backdrop.setValue(0);
-      translateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(backdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const { backdrop, translateY, close: handleClose } = useBottomSheet(visible, onClose);
 
   function toggleType(value: TransactionFilters['type']) {
     onChange({

@@ -11,15 +11,3 @@ export function formatCurrency(amount: number, settings: FormatSettings): string
   }
   return `${formatted} ${settings.currency_symbol}`;
 }
-
-export function formatAmount(amount: number, settings: FormatSettings): string {
-  const sign = amount >= 0 ? '+' : '-';
-  return `${sign}${formatCurrency(amount, settings)}`;
-}
-
-export function formatBalance(amount: number, settings: FormatSettings): string {
-  if (amount < 0) {
-    return `-${formatCurrency(amount, settings)}`;
-  }
-  return formatCurrency(amount, settings);
-}
