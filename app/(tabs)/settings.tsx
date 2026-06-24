@@ -32,11 +32,14 @@ import {
   useDeleteAccountGroup,
 } from '@/hooks/useAccounts';
 import { useBudgets, useSetBudgetDefault, useSetBudgetOverride } from '@/hooks/useBudgets';
+import { useRecurringRules } from '@/hooks/useRecurring';
 import { useQueryClient } from '@tanstack/react-query';
 import { importTransactionsCSV } from '@/services/importExport';
 import ImportSheet from '@/components/settings/ImportSheet';
 import ExportSheet from '@/components/settings/ExportSheet';
+import RecurringRuleSheet from '@/components/settings/RecurringRuleSheet';
 import type { ImportResult } from '@/services/importExport';
+import type { RecurringRule } from '@/types';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { colors, categoryColors } from '@/lib/colors';
 import { formatCurrency } from '@/lib/currency';
@@ -85,6 +88,7 @@ export default function SettingsScreen() {
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: groups = [] } = useAccountGroups();
+  const { data: recurringRules = [] } = useRecurringRules();
   const updateSettings = useUpdateSettings();
   const deleteCategory = useDeleteCategory();
   const deleteAccount = useDeleteAccount();
@@ -144,6 +148,9 @@ export default function SettingsScreen() {
   const [acctGroupModal, setAcctGroupModal] = useState<AcctGroupModalState>({ open: false });
   const [budgetModal, setBudgetModal] = useState<BudgetModalState>({ open: false });
   const [reassignModal, setReassignModal] = useState<ReassignModalState>({ open: false });
+  const [recurringModal, setRecurringModal] = useState<{ open: boolean; rule?: RecurringRule }>({
+    open: false,
+  });
 
   const expCats = categories.filter((c) => c.type === 'expense');
   const incCats = categories.filter((c) => c.type === 'income');
@@ -454,6 +461,65 @@ export default function SettingsScreen() {
           )}
         </SectionCard>
 
+        {/* ── Recurring ── */}
+        <SubSectionHeader
+          label="Recurring Transactions"
+          onAdd={() => setRecurringModal({ open: true })}
+          topMargin={24}
+        />
+        <SectionCard>
+          {recurringRules.length === 0 ? (
+            <EmptyRow text="No recurring rules" />
+          ) : (
+            recurringRules.map((rule, idx) => (
+              <View key={rule.id}>
+                {idx > 0 && <RowDivider />}
+                <TouchableOpacity
+                  onPress={() => setRecurringModal({ open: true, rule })}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        color: rule.active ? colors.textPrimary : colors.textMuted,
+                      }}
+                    >
+                      {rule.note}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                      {rule.category_name} · {rule.account_name} ·{' '}
+                      {rule.frequency.replace('_', ' ')}
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: '600',
+                      color: rule.amount > 0 ? colors.income : colors.expense,
+                      marginRight: 6,
+                    }}
+                  >
+                    {rule.amount > 0 ? '+' : '-'}
+                    {formatCurrency(Math.abs(rule.amount), settings)}
+                  </Text>
+                  {!rule.active && (
+                    <Text style={{ fontSize: 11, color: colors.textFaint, marginRight: 6 }}>
+                      Paused
+                    </Text>
+                  )}
+                  <Text style={{ fontSize: 18, color: colors.textFaint }}>›</Text>
+                </TouchableOpacity>
+              </View>
+            ))
+          )}
+        </SectionCard>
+
         {/* ── Data ── */}
         <SectionLabel text="Data" />
         <SectionCard>
@@ -561,6 +627,11 @@ export default function SettingsScreen() {
         txCount={reassignModal.txCount ?? 0}
         categories={categories}
         onClose={() => setReassignModal({ open: false })}
+      />
+      <RecurringRuleSheet
+        visible={recurringModal.open}
+        rule={recurringModal.rule}
+        onClose={() => setRecurringModal({ open: false })}
       />
       <ImportSheet
         visible={importResultVisible}

@@ -82,6 +82,32 @@ export interface CategoryStats {
   type: CategoryType;
 }
 
+export type RecurringFrequency =
+  | 'daily'
+  | 'weekly'
+  | 'biweekly'
+  | 'monthly'
+  | 'end_of_month'
+  | 'bimonthly'
+  | 'annually';
+
+export interface RecurringRule {
+  id: number;
+  category_id: number;
+  account_id: number;
+  amount: number;
+  note: string;
+  description: string;
+  frequency: RecurringFrequency;
+  start_date: string; // YYYY-MM-DD — reference date for the schedule
+  last_created_date: string | null; // YYYY-MM-DD of last auto-created transaction
+  active: boolean;
+  category_name: string;
+  category_color: string;
+  category_type: CategoryType;
+  account_name: string;
+}
+
 export interface TransactionFormData {
   account_id: number;
   category_id: number;
