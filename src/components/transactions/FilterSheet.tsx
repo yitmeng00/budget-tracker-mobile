@@ -2,6 +2,7 @@ import { useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useCategories } from '@/hooks/useCategories';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import type { TransactionFilters } from '@/types';
 
 interface Props {
@@ -11,14 +12,14 @@ interface Props {
   onChange: (f: TransactionFilters) => void;
 }
 
-const TYPE_OPTIONS: { label: string; value: TransactionFilters['type'] }[] = [
-  { label: 'All', value: undefined },
-  { label: 'Income', value: 'income' },
-  { label: 'Expense', value: 'expense' },
-];
-
 export default function FilterSheet({ visible, onClose, filters, onChange }: Props) {
   const colors = useColors();
+  const t = useStrings();
+  const typeOptions: { label: string; value: TransactionFilters['type'] }[] = [
+    { label: t.all, value: undefined },
+    { label: t.income, value: 'income' },
+    { label: t.expense, value: 'expense' },
+  ];
   const { data: categories = [] } = useCategories();
   const backdrop = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(800)).current;
@@ -121,16 +122,18 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
           >
             {hasFilters ? (
               <TouchableOpacity onPress={handleClear}>
-                <Text style={{ fontSize: 15, color: colors.expense }}>Clear</Text>
+                <Text style={{ fontSize: 15, color: colors.expense }}>{t.filterClear}</Text>
               </TouchableOpacity>
             ) : (
               <View style={{ width: 44 }} />
             )}
             <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary }}>
-              Filter
+              {t.filterTitle}
             </Text>
             <TouchableOpacity onPress={handleClose}>
-              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.accent }}>Done</Text>
+              <Text style={{ fontSize: 15, fontWeight: '600', color: colors.accent }}>
+                {t.done}
+              </Text>
             </TouchableOpacity>
           </View>
 
@@ -150,10 +153,10 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
                 marginBottom: 10,
               }}
             >
-              Type
+              {t.filterType}
             </Text>
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 24 }}>
-              {TYPE_OPTIONS.map(({ label, value }) => {
+              {typeOptions.map(({ label, value }) => {
                 const active = filters.type === value;
                 return (
                   <TouchableOpacity
@@ -192,7 +195,7 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
                 marginBottom: 10,
               }}
             >
-              Category
+              {t.filterCategory}
             </Text>
             <View style={{ backgroundColor: colors.bg, borderRadius: 12, overflow: 'hidden' }}>
               {visibleCategories.map((cat, idx) => {

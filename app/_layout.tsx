@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { getDb } from '@/db/client';
 import { processRecurringTransactions } from '@/services/recurring';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +29,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <Stack screenOptions={{ headerShown: false }} />
+          <LanguageProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </LanguageProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

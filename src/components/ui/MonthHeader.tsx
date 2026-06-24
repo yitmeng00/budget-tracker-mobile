@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import { MONTH_NAMES, MONTH_SHORT } from '@/lib/constants';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 
 interface Props {
   year: number;
@@ -14,6 +14,7 @@ interface Props {
 
 export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Props) {
   const colors = useColors();
+  const t = useStrings();
   const [picking, setPicking] = useState(false);
   const [pickYear, setPickYear] = useState(year);
 
@@ -57,7 +58,7 @@ export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Pro
 
         <TouchableOpacity onPress={openPicker} hitSlop={8}>
           <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary }}>
-            {MONTH_NAMES[month - 1]} {year}
+            {t.monthNames[month - 1]} {year}
           </Text>
         </TouchableOpacity>
 
@@ -115,7 +116,7 @@ export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Pro
 
             {/* Month grid — 4 columns */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {MONTH_SHORT.map((name, i) => {
+              {t.monthShort.map((name, i) => {
                 const m = i + 1;
                 const isSelected = m === month && pickYear === year;
                 const isCurrent = isCurrentMonth(pickYear, m);
@@ -165,7 +166,7 @@ export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Pro
               }}
             >
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.accent }}>
-                This Month
+                {t.thisMonth}
               </Text>
             </TouchableOpacity>
           </TouchableOpacity>

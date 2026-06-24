@@ -4,11 +4,13 @@ import { useAccounts, useAccountGroups, useNetWorth } from '@/hooks/useAccounts'
 import { useSettings } from '@/hooks/useSettings';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/currency';
 import type { Account, AccountGroup, UserSettings } from '@/types';
 
 export default function AccountsScreen() {
   const colors = useColors();
+  const t = useStrings();
   const { data: groups = [] } = useAccountGroups();
   const { data: accounts = [] } = useAccounts();
   const { data: netWorth = 0 } = useNetWorth();
@@ -40,7 +42,7 @@ export default function AccountsScreen() {
           if (ungrouped.length === 0) return null;
           return (
             <GroupSection
-              group={{ id: 0, name: 'Other', sort_order: 99 }}
+              group={{ id: 0, name: t.other, sort_order: 99 }}
               accounts={ungrouped}
               settings={settings}
             />
@@ -61,6 +63,7 @@ function NetWorthCard({
   settings: UserSettings;
 }) {
   const colors = useColors();
+  const t = useStrings();
   return (
     <View
       style={{
@@ -81,7 +84,7 @@ function NetWorthCard({
           marginBottom: 10,
         }}
       >
-        Net Worth
+        {t.netWorth}
       </Text>
       <Text
         style={{
@@ -96,7 +99,10 @@ function NetWorthCard({
         {formatCurrency(Math.abs(netWorth), settings)}
       </Text>
       <Text style={{ fontSize: 14, color: colors.textMuted }}>
-        Across {accountCount} {accountCount === 1 ? 'account' : 'accounts'}
+        {(accountCount === 1 ? t.acrossAccountSingular : t.acrossAccountPlural).replace(
+          '{n}',
+          String(accountCount),
+        )}
       </Text>
     </View>
   );
