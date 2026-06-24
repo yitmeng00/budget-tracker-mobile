@@ -32,6 +32,11 @@ import {
   useDeleteAccountGroup,
 } from '@/hooks/useAccounts';
 import { useBudgets, useSetBudgetDefault, useSetBudgetOverride } from '@/hooks/useBudgets';
+import { useQueryClient } from '@tanstack/react-query';
+import { importTransactionsCSV } from '@/services/importExport';
+import ImportSheet from '@/components/settings/ImportSheet';
+import ExportSheet from '@/components/settings/ExportSheet';
+import type { ImportResult } from '@/services/importExport';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { colors, categoryColors } from '@/lib/colors';
 import { formatCurrency } from '@/lib/currency';
@@ -84,6 +89,29 @@ export default function SettingsScreen() {
   const deleteCategory = useDeleteCategory();
   const deleteAccount = useDeleteAccount();
   const deleteAccountGroup = useDeleteAccountGroup();
+  const queryClient = useQueryClient();
+
+  const [exportSheetVisible, setExportSheetVisible] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [importResultVisible, setImportResultVisible] = useState(false);
+
+  async function handleImport() {
+    if (importLoading) return;
+    setImportLoading(true);
+    try {
+      const result = await importTransactionsCSV();
+      if (result) {
+        await queryClient.invalidateQueries();
+        setImportResult(result);
+        setImportResultVisible(true);
+      }
+    } catch (e) {
+      Alert.alert('Import Failed', (e as Error).message);
+    } finally {
+      setImportLoading(false);
+    }
+  }
 
   const now = new Date();
   const [budgetYear, setBudgetYear] = useState(now.getFullYear());
@@ -426,6 +454,45 @@ export default function SettingsScreen() {
           )}
         </SectionCard>
 
+        {/* ── Data ── */}
+        <SectionLabel text="Data" />
+        <SectionCard>
+          <TouchableOpacity
+            onPress={() => setExportSheetVisible(true)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
+          >
+            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>Export CSV</Text>
+            <Text style={{ fontSize: 18, color: colors.textFaint }}>↑</Text>
+          </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
+          <TouchableOpacity
+            onPress={handleImport}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, color: colors.textPrimary }}>Import CSV</Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                Date, Type, Category, Account, Amount, Note
+              </Text>
+            </View>
+            {importLoading ? (
+              <ActivityIndicator size="small" color={colors.accent} />
+            ) : (
+              <Text style={{ fontSize: 18, color: colors.textFaint }}>↓</Text>
+            )}
+          </TouchableOpacity>
+        </SectionCard>
+
         {/* ── About ── */}
         <SectionLabel text="About" />
         <SectionCard>
@@ -495,6 +562,12 @@ export default function SettingsScreen() {
         categories={categories}
         onClose={() => setReassignModal({ open: false })}
       />
+      <ImportSheet
+        visible={importResultVisible}
+        result={importResult}
+        onClose={() => setImportResultVisible(false)}
+      />
+      <ExportSheet visible={exportSheetVisible} onClose={() => setExportSheetVisible(false)} />
     </SafeAreaView>
   );
 }
