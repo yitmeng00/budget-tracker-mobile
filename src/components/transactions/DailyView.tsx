@@ -29,6 +29,7 @@ interface Props {
   transactions: Transaction[];
   settings: UserSettings;
   onPressTransaction?: (t: Transaction) => void;
+  onDuplicateTransaction?: (t: Transaction) => void;
   ListHeaderComponent?: React.ReactElement;
 }
 
@@ -36,6 +37,7 @@ export default function DailyView({
   transactions,
   settings,
   onPressTransaction,
+  onDuplicateTransaction,
   ListHeaderComponent,
 }: Props) {
   const sections = groupByDate(transactions);
@@ -66,7 +68,12 @@ export default function DailyView({
       }}
       renderItem={({ item, index, section }) => (
         <View>
-          <TransactionItem transaction={item} settings={settings} onPress={onPressTransaction} />
+          <TransactionItem
+            transaction={item}
+            settings={settings}
+            onPress={onPressTransaction}
+            onDuplicate={onDuplicateTransaction}
+          />
           {index < section.data.length - 1 && <View className="h-px bg-border ml-16" />}
         </View>
       )}

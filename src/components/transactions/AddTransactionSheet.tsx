@@ -10,7 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { X, Trash2, ChevronRight, ChevronLeft } from 'lucide-react-native';
+import { X, Trash2, ChevronRight, ChevronLeft, Copy } from 'lucide-react-native';
 import { useCategories } from '@/hooks/useCategories';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useSettings } from '@/hooks/useSettings';
@@ -28,6 +28,8 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   transaction?: Transaction;
+  duplicateFrom?: Transaction;
+  onDuplicate?: (t: Transaction) => void;
 }
 
 interface FormState {
@@ -40,7 +42,13 @@ interface FormState {
   description: string;
 }
 
-export default function AddTransactionSheet({ visible, onClose, transaction }: Props) {
+export default function AddTransactionSheet({
+  visible,
+  onClose,
+  transaction,
+  duplicateFrom,
+  onDuplicate,
+}: Props) {
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
@@ -105,6 +113,16 @@ export default function AddTransactionSheet({ visible, onClose, transaction }: P
           note: transaction.note,
           description: transaction.description,
         });
+      } else if (duplicateFrom) {
+        setForm({
+          type: duplicateFrom.amount > 0 ? 'income' : 'expense',
+          amount: String(Math.abs(duplicateFrom.amount)),
+          category_id: duplicateFrom.category_id,
+          account_id: duplicateFrom.account_id,
+          date: todayISO(),
+          note: duplicateFrom.note,
+          description: duplicateFrom.description,
+        });
       } else {
         setForm({
           type: 'expense',
@@ -122,7 +140,7 @@ export default function AddTransactionSheet({ visible, onClose, transaction }: P
       // Pre-reset amount while modal is offscreen so next open starts with narrow TextInput
       setForm((f) => ({ ...f, amount: '' }));
     }
-  }, [visible, transaction, accounts]);
+  }, [visible, transaction, duplicateFrom, accounts]);
 
   function handleTypeChange(type: TransactionType) {
     setForm((f) => ({ ...f, type, category_id: null }));
@@ -586,21 +604,38 @@ export default function AddTransactionSheet({ visible, onClose, transaction }: P
             {/* Action buttons */}
             <View style={{ flexDirection: 'row', gap: 12, marginHorizontal: 16, marginBottom: 32 }}>
               {isEditing && (
-                <TouchableOpacity
-                  onPress={handleDelete}
-                  style={{
-                    width: 56,
-                    height: 56,
-                    backgroundColor: colors.bg,
-                    borderRadius: 16,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 1.5,
-                    borderColor: colors.border,
-                  }}
-                >
-                  <Trash2 color={colors.expense} size={20} />
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity
+                    onPress={handleDelete}
+                    style={{
+                      width: 56,
+                      height: 56,
+                      backgroundColor: colors.bg,
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1.5,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <Trash2 color={colors.expense} size={20} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => onDuplicate?.(transaction!)}
+                    style={{
+                      width: 56,
+                      height: 56,
+                      backgroundColor: colors.bg,
+                      borderRadius: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderWidth: 1.5,
+                      borderColor: colors.border,
+                    }}
+                  >
+                    <Copy color={colors.accent} size={20} />
+                  </TouchableOpacity>
+                </>
               )}
               <TouchableOpacity
                 onPress={handleSave}

@@ -57,6 +57,7 @@ interface Props {
   transactions: Transaction[];
   settings: UserSettings;
   onPressTransaction: (t: Transaction) => void;
+  onDuplicateTransaction?: (t: Transaction) => void;
 }
 
 export default function CalendarView({
@@ -65,6 +66,7 @@ export default function CalendarView({
   transactions,
   settings,
   onPressTransaction,
+  onDuplicateTransaction,
 }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
@@ -217,7 +219,12 @@ export default function CalendarView({
 
           {selectedTransactions.map((t, i) => (
             <View key={t.id}>
-              <TransactionItem transaction={t} settings={settings} onPress={onPressTransaction} />
+              <TransactionItem
+                transaction={t}
+                settings={settings}
+                onPress={onPressTransaction}
+                onDuplicate={onDuplicateTransaction}
+              />
               {i < selectedTransactions.length - 1 && (
                 <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 64 }} />
               )}
