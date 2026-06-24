@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useMonth } from '@/hooks/useMonth';
 import { useSettings } from '@/hooks/useSettings';
@@ -34,15 +34,18 @@ export default function StatsScreen() {
   const { data: budgets = [] } = useBudgets(year, month);
 
   // Month period
-  const { data: trend = [] } = useMonthsTrend(year, month, 6);
+  const { data: trend = [], isPlaceholderData: trendStale } = useMonthsTrend(year, month, 6);
   const { data: expCatsMonth = [] } = useCategoryStats(year, month, 'expense');
   const { data: incCatsMonth = [] } = useCategoryStats(year, month, 'income');
 
   // Year period
-  const { data: yearlySummary = { income: 0, expenses: 0 } } = useYearlySummary(yearView);
+  const { data: yearlySummary = { income: 0, expenses: 0 }, isPlaceholderData: yearStale } =
+    useYearlySummary(yearView);
   const { data: monthsInYear = [] } = useMonthsForYear(yearView);
   const { data: expCatsYear = [] } = useYearlyCategoryStats(yearView, 'expense');
   const { data: incCatsYear = [] } = useYearlyCategoryStats(yearView, 'income');
+
+  const isStale = period === 'month' ? trendStale : yearStale;
 
   const monthData = trend.find((m) => m.year === year && m.month === month) ?? {
     income: 0,
@@ -68,111 +71,113 @@ export default function StatsScreen() {
         />
       )}
 
-      {/* Summary cards */}
-      {period === 'month' ? (
-        <SummaryCards
-          income={monthData.income}
-          expenses={monthData.expenses}
-          net={monthlyNet}
-          settings={settings}
-        />
-      ) : (
-        <SummaryCards
-          income={yearlySummary.income}
-          expenses={yearlySummary.expenses}
-          net={yearlyNet}
-          settings={settings}
-        />
-      )}
+      <View style={{ flex: 1, opacity: isStale ? 0.4 : 1 }}>
+        {/* Summary cards */}
+        {period === 'month' ? (
+          <SummaryCards
+            income={monthData.income}
+            expenses={monthData.expenses}
+            net={monthlyNet}
+            settings={settings}
+          />
+        ) : (
+          <SummaryCards
+            income={yearlySummary.income}
+            expenses={yearlySummary.expenses}
+            net={yearlyNet}
+            settings={settings}
+          />
+        )}
 
-      {/* Period toggle */}
-      <View
-        style={{
-          flexDirection: 'row',
-          marginHorizontal: 16,
-          marginTop: 6,
-          marginBottom: 6,
-          backgroundColor: colors.bg,
-          borderRadius: 12,
-          padding: 3,
-        }}
-      >
-        {(['month', 'year'] as Period[]).map((p) => {
-          const active = period === p;
-          return (
-            <TouchableOpacity
-              key={p}
-              onPress={() => setPeriod(p)}
-              style={{
-                flex: 1,
-                paddingVertical: 7,
-                borderRadius: 9,
-                alignItems: 'center',
-                backgroundColor: active ? colors.surface : 'transparent',
-                ...(active && {
-                  shadowColor: '#000',
-                  shadowOpacity: 0.07,
-                  shadowRadius: 3,
-                  shadowOffset: { width: 0, height: 1 },
-                }),
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: active ? '600' : '400',
-                  color: active ? colors.textPrimary : colors.textMuted,
-                }}
-              >
-                {p === 'month' ? 'Month' : 'Year'}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        {/* Trend chart */}
-        <SectionLabel text={period === 'month' ? 'Last 6 Months' : 'Monthly Trend'} />
+        {/* Period toggle */}
         <View
           style={{
+            flexDirection: 'row',
             marginHorizontal: 16,
-            backgroundColor: colors.surface,
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 16,
+            marginTop: 6,
+            marginBottom: 6,
+            backgroundColor: colors.bg,
+            borderRadius: 12,
+            padding: 3,
           }}
         >
-          <TrendChart months={period === 'month' ? trend : monthsInYear} settings={settings} />
+          {(['month', 'year'] as Period[]).map((p) => {
+            const active = period === p;
+            return (
+              <TouchableOpacity
+                key={p}
+                onPress={() => setPeriod(p)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 7,
+                  borderRadius: 9,
+                  alignItems: 'center',
+                  backgroundColor: active ? colors.surface : 'transparent',
+                  ...(active && {
+                    shadowColor: '#000',
+                    shadowOpacity: 0.07,
+                    shadowRadius: 3,
+                    shadowOffset: { width: 0, height: 1 },
+                  }),
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: active ? '600' : '400',
+                    color: active ? colors.textPrimary : colors.textMuted,
+                  }}
+                >
+                  {p === 'month' ? 'Month' : 'Year'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        {/* Expense categories */}
-        {expCats.length > 0 && (
-          <>
-            <SectionLabel text="Expenses by Category" />
-            <CategoryBreakdown items={expCats} settings={settings} />
-          </>
-        )}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* Trend chart */}
+          <SectionLabel text={period === 'month' ? 'Last 6 Months' : 'Monthly Trend'} />
+          <View
+            style={{
+              marginHorizontal: 16,
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 16,
+              marginBottom: 16,
+            }}
+          >
+            <TrendChart months={period === 'month' ? trend : monthsInYear} settings={settings} />
+          </View>
 
-        {/* Income categories */}
-        {incCats.length > 0 && (
-          <>
-            <SectionLabel text="Income by Category" />
-            <CategoryBreakdown items={incCats} settings={settings} />
-          </>
-        )}
+          {/* Expense categories */}
+          {expCats.length > 0 && (
+            <>
+              <SectionLabel text="Expenses by Category" />
+              <CategoryBreakdown items={expCats} settings={settings} />
+            </>
+          )}
 
-        {/* Budget (monthly view only) */}
-        {period === 'month' && budgets.some((b) => b.effective_amount !== null) && (
-          <>
-            <SectionLabel text="Budget" />
-            <BudgetBreakdown budgets={budgets} settings={settings} />
-          </>
-        )}
-      </ScrollView>
+          {/* Income categories */}
+          {incCats.length > 0 && (
+            <>
+              <SectionLabel text="Income by Category" />
+              <CategoryBreakdown items={incCats} settings={settings} />
+            </>
+          )}
+
+          {/* Budget (monthly view only) */}
+          {period === 'month' && budgets.some((b) => b.effective_amount !== null) && (
+            <>
+              <SectionLabel text="Budget" />
+              <BudgetBreakdown budgets={budgets} settings={settings} />
+            </>
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

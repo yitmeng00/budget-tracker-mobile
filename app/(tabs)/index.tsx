@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plus } from 'lucide-react-native';
 import { useMonth } from '@/hooks/useMonth';
@@ -16,7 +16,7 @@ import type { Transaction, ViewMode } from '@/types';
 
 export default function TransactionsScreen() {
   const { year, month, prev, next, jumpTo } = useMonth();
-  const { data: transactions = [] } = useTransactions(year, month);
+  const { data: transactions = [], isPlaceholderData } = useTransactions(year, month);
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
 
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
@@ -58,23 +58,29 @@ export default function TransactionsScreen() {
 
       <ViewToggle value={viewMode} onChange={setViewMode} />
 
-      {viewMode === 'daily' && (
-        <DailyView transactions={transactions} settings={settings} onPressTransaction={openEdit} />
-      )}
+      <View style={{ flex: 1, opacity: isPlaceholderData ? 0.4 : 1 }}>
+        {viewMode === 'daily' && (
+          <DailyView
+            transactions={transactions}
+            settings={settings}
+            onPressTransaction={openEdit}
+          />
+        )}
 
-      {viewMode === 'calendar' && (
-        <CalendarView
-          year={year}
-          month={month}
-          transactions={transactions}
-          settings={settings}
-          onPressTransaction={openEdit}
-        />
-      )}
+        {viewMode === 'calendar' && (
+          <CalendarView
+            year={year}
+            month={month}
+            transactions={transactions}
+            settings={settings}
+            onPressTransaction={openEdit}
+          />
+        )}
 
-      {viewMode === 'monthly' && (
-        <MonthlyView year={yearView} settings={settings} onPressTransaction={openEdit} />
-      )}
+        {viewMode === 'monthly' && (
+          <MonthlyView year={yearView} settings={settings} onPressTransaction={openEdit} />
+        )}
+      </View>
 
       <TouchableOpacity
         onPress={openAdd}
