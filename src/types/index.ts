@@ -1,4 +1,9 @@
 export type WeekDay = 'Sunday' | 'Monday' | 'Saturday';
+
+export interface TransactionFilters {
+  type?: 'income' | 'expense';
+  categoryIds?: number[];
+}
 export type UnitPosition = 'prefix' | 'suffix';
 export type CategoryType = 'income' | 'expense';
 export type TransactionType = 'income' | 'expense';

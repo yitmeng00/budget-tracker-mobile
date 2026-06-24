@@ -1,5 +1,5 @@
 import { getDb } from '../db/client';
-import type { Transaction } from '../types';
+import type { Transaction, TransactionFilters } from '../types';
 
 const SELECT_TRANSACTIONS = `
   SELECT
@@ -64,6 +64,40 @@ export async function getTransactions(year: number, month: number): Promise<Tran
      WHERE strftime('%Y', t.date) = ? AND strftime('%m', t.date) = ?
      ORDER BY t.date DESC, t.time DESC`,
     [y, m],
+  );
+  return rows.map(mapTransaction);
+}
+
+export async function searchTransactions(
+  query: string,
+  filters: TransactionFilters,
+): Promise<Transaction[]> {
+  const db = getDb();
+  const conditions: string[] = [];
+  const params: (string | number)[] = [];
+
+  if (query.trim()) {
+    const q = `%${query.trim()}%`;
+    conditions.push('(t.note LIKE ? OR t.description LIKE ? OR c.name LIKE ?)');
+    params.push(q, q, q);
+  }
+
+  if (filters.type === 'income') {
+    conditions.push('t.amount > 0');
+  } else if (filters.type === 'expense') {
+    conditions.push('t.amount < 0');
+  }
+
+  if (filters.categoryIds && filters.categoryIds.length > 0) {
+    const placeholders = filters.categoryIds.map(() => '?').join(', ');
+    conditions.push(`t.category_id IN (${placeholders})`);
+    params.push(...filters.categoryIds);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const rows = db.getAllSync<RawTransaction>(
+    `${SELECT_TRANSACTIONS} ${where} ORDER BY t.date DESC, t.time DESC LIMIT 500`,
+    params,
   );
   return rows.map(mapTransaction);
 }
