@@ -2,9 +2,11 @@ import { Tabs } from 'expo-router';
 import { LayoutList, BarChart2, Wallet, Settings } from 'lucide-react-native';
 import { Platform } from 'react-native';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 
 export default function TabLayout() {
   const colors = useColors();
+  const t = useStrings();
 
   return (
     <Tabs
@@ -30,28 +32,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Transactions',
+          title: t.tabTransactions,
           tabBarIcon: ({ color, size }) => <LayoutList color={color} size={size - 2} />,
         }}
       />
       <Tabs.Screen
         name="stats"
         options={{
-          title: 'Stats',
+          title: t.tabStats,
           tabBarIcon: ({ color, size }) => <BarChart2 color={color} size={size - 2} />,
         }}
       />
       <Tabs.Screen
         name="accounts"
         options={{
-          title: 'Accounts',
+          title: t.tabAccounts,
           tabBarIcon: ({ color, size }) => <Wallet color={color} size={size - 2} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          title: t.tabSettings,
           tabBarIcon: ({ color, size }) => <Settings color={color} size={size - 2} />,
         }}
       />

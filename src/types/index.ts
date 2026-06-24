@@ -1,5 +1,6 @@
 export type WeekDay = 'Sunday' | 'Monday' | 'Saturday';
 export type ThemeMode = 'light' | 'dark' | 'system';
+export type Language = 'en' | 'ms' | 'zh-hans' | 'zh-hant';
 
 export interface TransactionFilters {
   type?: 'income' | 'expense';
@@ -55,6 +56,7 @@ export interface UserSettings {
   currency_symbol: string;
   unit_position: UnitPosition;
   theme: ThemeMode;
+  language: Language;
 }
 
 export interface BudgetEntry {

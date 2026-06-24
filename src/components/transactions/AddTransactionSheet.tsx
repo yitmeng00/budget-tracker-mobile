@@ -21,6 +21,7 @@ import {
 } from '@/hooks/useTransactions';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import { todayISO, currentTimeISO, formatDateISO, formatDateHeader } from '@/lib/date';
 import type { Transaction, TransactionType } from '@/types';
 
@@ -50,6 +51,7 @@ export default function AddTransactionSheet({
   onDuplicate,
 }: Props) {
   const colors = useColors();
+  const t = useStrings();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
@@ -153,21 +155,21 @@ export default function AddTransactionSheet({
   async function handleSave() {
     const amount = parseFloat(form.amount);
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a valid amount.');
+      Alert.alert(t.invalidAmountTitle, t.invalidAmountMsg);
       return;
     }
     const category_id = form.category_id;
     if (!category_id) {
-      Alert.alert('Select category', 'Please select a category.');
+      Alert.alert(t.selectCategoryTitle, t.selectCategoryMsg);
       return;
     }
     const account_id = form.account_id;
     if (!account_id) {
-      Alert.alert('Select account', 'Please select an account.');
+      Alert.alert(t.selectAccountTitle, t.selectAccountMsg);
       return;
     }
     if (!form.note.trim()) {
-      Alert.alert('Note required', 'Please add a note for this transaction.');
+      Alert.alert(t.noteRequiredTitle, t.noteRequiredMsg);
       return;
     }
 
@@ -190,23 +192,23 @@ export default function AddTransactionSheet({
       }
       handleClose();
     } catch {
-      Alert.alert('Error', "Couldn't save this transaction. Please try again.");
+      Alert.alert(t.error, t.savingError);
     }
   }
 
   function handleDelete() {
     if (!transaction) return;
-    Alert.alert('Delete transaction', 'Are you sure you want to delete this transaction?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t.deleteTransactionTitle, t.deleteTransactionMsg, [
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Delete',
+        text: t.delete,
         style: 'destructive',
         onPress: async () => {
           try {
             await deleteTx.mutateAsync(transaction.id);
             handleClose();
           } catch {
-            Alert.alert('Error', "Couldn't delete this transaction. Please try again.");
+            Alert.alert(t.error, t.deletingError);
           }
         },
       },
@@ -263,7 +265,7 @@ export default function AddTransactionSheet({
             }}
           >
             <Text style={{ fontSize: 17, fontWeight: '700', color: colors.textPrimary }}>
-              {isEditing ? 'Edit Transaction' : 'Add Transaction'}
+              {isEditing ? t.editTransaction : t.addTransaction}
             </Text>
             <TouchableOpacity onPress={handleClose} hitSlop={12}>
               <X color={colors.textMuted} size={22} />
@@ -288,12 +290,12 @@ export default function AddTransactionSheet({
                 padding: 4,
               }}
             >
-              {(['expense', 'income'] as TransactionType[]).map((t) => {
-                const active = form.type === t;
+              {(['expense', 'income'] as TransactionType[]).map((txType) => {
+                const active = form.type === txType;
                 return (
                   <TouchableOpacity
-                    key={t}
-                    onPress={() => handleTypeChange(t)}
+                    key={txType}
+                    onPress={() => handleTypeChange(txType)}
                     style={{
                       flex: 1,
                       paddingVertical: 9,
@@ -312,15 +314,14 @@ export default function AddTransactionSheet({
                       style={{
                         fontSize: 14,
                         fontWeight: '600',
-                        textTransform: 'capitalize',
                         color: active
-                          ? t === 'income'
+                          ? txType === 'income'
                             ? colors.income
                             : colors.expense
                           : colors.textMuted,
                       }}
                     >
-                      {t}
+                      {txType === 'income' ? t.income : t.expense}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -370,8 +371,7 @@ export default function AddTransactionSheet({
                 letterSpacing: 0.8,
               }}
             >
-              {'Category '}
-              <Text style={{ color: colors.expense }}>*</Text>
+              {t.categoryLabel} <Text style={{ color: colors.expense }}>*</Text>
             </Text>
 
             {/* Category chips */}
@@ -439,10 +439,10 @@ export default function AddTransactionSheet({
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Account <Text style={{ color: colors.expense }}>*</Text>
+                  {t.accountLabel} <Text style={{ color: colors.expense }}>*</Text>
                 </Text>
                 <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
-                  {selectedAccount?.name ?? 'Select account'}
+                  {selectedAccount?.name ?? t.selectAccountTitle}
                 </Text>
                 <ChevronRight color={colors.textFaint} size={16} />
               </TouchableOpacity>
@@ -506,7 +506,7 @@ export default function AddTransactionSheet({
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Date <Text style={{ color: colors.expense }}>*</Text>
+                  {t.dateLabel} <Text style={{ color: colors.expense }}>*</Text>
                 </Text>
                 <Text style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}>
                   {formatDateHeader(form.date)}
@@ -567,12 +567,12 @@ export default function AddTransactionSheet({
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Note <Text style={{ color: colors.expense }}>*</Text>
+                  {t.noteLabel} <Text style={{ color: colors.expense }}>*</Text>
                 </Text>
                 <TextInput
                   value={form.note}
                   onChangeText={(v) => setForm((f) => ({ ...f, note: v }))}
-                  placeholder="e.g. Lunch at Mamak"
+                  placeholder={t.notePlaceholder}
                   placeholderTextColor={colors.textFaint}
                   returnKeyType="next"
                   style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}
@@ -589,12 +589,12 @@ export default function AddTransactionSheet({
                 }}
               >
                 <Text style={{ width: 88, fontSize: 14, color: colors.textMuted }}>
-                  Description
+                  {t.descriptionLabel}
                 </Text>
                 <TextInput
                   value={form.description}
                   onChangeText={(v) => setForm((f) => ({ ...f, description: v }))}
-                  placeholder="Optional details..."
+                  placeholder={t.optionalDetails}
                   placeholderTextColor={colors.textFaint}
                   returnKeyType="done"
                   style={{ flex: 1, fontSize: 14, color: colors.textPrimary }}
@@ -652,7 +652,7 @@ export default function AddTransactionSheet({
                 }}
               >
                 <Text style={{ fontSize: 16, fontWeight: '600', color: 'white' }}>
-                  {isSaving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Transaction'}
+                  {isSaving ? t.saving : isEditing ? t.saveChanges : t.addTransaction}
                 </Text>
               </TouchableOpacity>
             </View>

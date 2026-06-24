@@ -16,6 +16,7 @@ import SummaryCards from '@/components/transactions/SummaryCards';
 import TrendChart from '@/components/stats/TrendChart';
 import DonutChart from '@/components/stats/DonutChart';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/currency';
 import { useBudgets } from '@/hooks/useBudgets';
 import type { BudgetEntry, CategoryStats, UserSettings } from '@/types';
@@ -24,6 +25,7 @@ type Period = 'month' | 'year';
 
 export default function StatsScreen() {
   const colors = useColors();
+  const t = useStrings();
   const [period, setPeriod] = useState<Period>('month');
   const { year, month, prev, next, jumpTo } = useMonth();
   const currentYear = new Date().getFullYear();
@@ -129,7 +131,7 @@ export default function StatsScreen() {
                     color: active ? colors.textPrimary : colors.textMuted,
                   }}
                 >
-                  {p === 'month' ? 'Month' : 'Year'}
+                  {p === 'month' ? t.month : t.year}
                 </Text>
               </TouchableOpacity>
             );
@@ -141,7 +143,7 @@ export default function StatsScreen() {
           contentContainerStyle={{ paddingBottom: 100 }}
         >
           {/* Trend chart */}
-          <SectionLabel text={period === 'month' ? 'Last 6 Months' : 'Monthly Trend'} />
+          <SectionLabel text={period === 'month' ? t.lastSixMonths : t.monthlyTrend} />
           <View
             style={{
               marginHorizontal: 16,
@@ -157,7 +159,7 @@ export default function StatsScreen() {
           {/* Expense categories */}
           {expCats.length > 0 && (
             <>
-              <SectionLabel text="Expenses by Category" />
+              <SectionLabel text={t.expensesByCategory} />
               <CategoryBreakdown items={expCats} settings={settings} />
             </>
           )}
@@ -165,7 +167,7 @@ export default function StatsScreen() {
           {/* Income categories */}
           {incCats.length > 0 && (
             <>
-              <SectionLabel text="Income by Category" />
+              <SectionLabel text={t.incomeByCategory} />
               <CategoryBreakdown items={incCats} settings={settings} />
             </>
           )}
@@ -173,7 +175,7 @@ export default function StatsScreen() {
           {/* Budget (monthly view only) */}
           {period === 'month' && budgets.some((b) => b.effective_amount !== null) && (
             <>
-              <SectionLabel text="Budget" />
+              <SectionLabel text={t.budget} />
               <BudgetBreakdown budgets={budgets} settings={settings} />
             </>
           )}
@@ -191,6 +193,7 @@ function BudgetBreakdown({
   settings: UserSettings;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const budgeted = budgets.filter((b) => b.effective_amount !== null);
   const overCount = budgeted.filter((b) => b.spent > (b.effective_amount ?? 0)).length;
 
@@ -218,7 +221,9 @@ function BudgetBreakdown({
           }}
         >
           <Text style={{ fontSize: 14, color: colors.expense, fontWeight: '600' }}>
-            {overCount} {overCount === 1 ? 'category' : 'categories'} over budget
+            {overCount === 1
+              ? t.categoryOverBudget
+              : t.categoriesOverBudget.replace('{n}', String(overCount))}
           </Text>
         </View>
       )}

@@ -43,8 +43,8 @@ import type { RecurringRule } from '@/types';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { categoryColors } from '@/lib/colors';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/currency';
-import { MONTH_NAMES, MONTH_SHORT } from '@/lib/constants';
 import type {
   Category,
   Account,
@@ -54,6 +54,7 @@ import type {
   WeekDay,
   UnitPosition,
   ThemeMode,
+  Language,
 } from '@/types';
 
 function autoColor(name: string): string {
@@ -79,16 +80,6 @@ const CURRENCY_PRESETS = [
 
 const WEEK_DAYS: WeekDay[] = ['Sunday', 'Monday', 'Saturday'];
 
-const FREQUENCY_LABELS = {
-  daily: 'Daily',
-  weekly: 'Weekly',
-  biweekly: 'Every 2 weeks',
-  monthly: 'Monthly',
-  end_of_month: 'End of month',
-  bimonthly: 'Every 2 months',
-  annually: 'Annually',
-};
-
 type CatModalState = { open: boolean; cat?: Category; defaultType?: 'expense' | 'income' };
 type AcctModalState = { open: boolean; acct?: Account };
 type AcctGroupModalState = { open: boolean; group?: AccountGroup };
@@ -97,7 +88,17 @@ type ReassignModalState = { open: boolean; cat?: Category; txCount?: number };
 
 export default function SettingsScreen() {
   const colors = useColors();
+  const t = useStrings();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
+  const frequencyLabels: Record<string, string> = {
+    daily: t.freqDaily,
+    weekly: t.freqWeekly,
+    biweekly: t.freqBiweekly,
+    monthly: t.freqMonthly,
+    end_of_month: t.freqEndOfMonth,
+    bimonthly: t.freqBimonthly,
+    annually: t.freqAnnually,
+  };
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: groups = [] } = useAccountGroups();
@@ -169,7 +170,7 @@ export default function SettingsScreen() {
   const incCats = categories.filter((c) => c.type === 'income');
 
   function handleDeleteCat(cat: Category) {
-    Alert.alert('Delete category', `Delete "${cat.name}"?`, [
+    Alert.alert(t.deleteCategoryTitle, t.confirmDeleteMsg.replace('{name}', cat.name), [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -187,7 +188,7 @@ export default function SettingsScreen() {
   }
 
   function handleDeleteGroup(group: AccountGroup) {
-    Alert.alert('Delete group', `Delete "${group.name}"?`, [
+    Alert.alert(t.deleteGroupTitle, t.confirmDeleteMsg.replace('{name}', group.name), [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -198,7 +199,7 @@ export default function SettingsScreen() {
   }
 
   function handleDeleteAcct(acct: Account) {
-    Alert.alert('Delete account', `Delete "${acct.name}"?`, [
+    Alert.alert(t.deleteAccountTitle, t.confirmDeleteMsg.replace('{name}', acct.name), [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -215,36 +216,81 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingBottom: 100 }}
       >
         {/* ── General ── */}
-        <SectionLabel text="General" />
+        <SectionLabel text={t.sectionGeneral} />
         <SectionCard>
           <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
             <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>
-              Week starts on
+              {t.weekStartsOn}
             </Text>
             <SegmentedPicker
               options={WEEK_DAYS}
               value={settings.week_start}
+              labels={[t.sunday, t.monday, t.saturday]}
               onChange={(v) => updateSettings.mutate({ week_start: v as WeekDay })}
             />
           </View>
         </SectionCard>
 
+        {/* ── Language ── */}
+        <SectionLabel text={t.sectionLanguage} />
+        <SectionCard>
+          {(
+            [
+              { value: 'en', label: t.langEnglish },
+              { value: 'ms', label: t.langMalay },
+              { value: 'zh-hans', label: t.langSimplifiedChinese },
+              { value: 'zh-hant', label: t.langTraditionalChinese },
+            ] as { value: Language; label: string }[]
+          ).map((lang, idx) => (
+            <TouchableOpacity
+              key={lang.value}
+              onPress={() => updateSettings.mutate({ language: lang.value })}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 14,
+                borderTopWidth: idx === 0 ? 0 : 1,
+                borderTopColor: colors.border,
+              }}
+            >
+              <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>{lang.label}</Text>
+              {settings.language === lang.value && (
+                <View
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    backgroundColor: colors.accent,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 12, fontWeight: '700' }}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </SectionCard>
+
         {/* ── Appearance ── */}
-        <SectionLabel text="Appearance" />
+        <SectionLabel text={t.sectionAppearance} />
         <SectionCard>
           <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-            <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>Theme</Text>
+            <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>
+              {t.theme}
+            </Text>
             <SegmentedPicker
               options={['light', 'dark', 'system']}
               value={settings.theme}
-              labels={['Light', 'Dark', 'System']}
+              labels={[t.themeLight, t.themeDark, t.themeSystem]}
               onChange={(v) => updateSettings.mutate({ theme: v as ThemeMode })}
             />
           </View>
         </SectionCard>
 
         {/* ── Currency ── */}
-        <SectionLabel text="Currency" />
+        <SectionLabel text={t.sectionCurrency} />
         <SectionCard>
           <TouchableOpacity
             onPress={() => setCurrencyModal(true)}
@@ -255,7 +301,7 @@ export default function SettingsScreen() {
               paddingVertical: 14,
             }}
           >
-            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>Currency</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>{t.currency}</Text>
             <Text style={{ fontSize: 14, color: colors.textMuted, marginRight: 6 }}>
               {settings.currency_symbol} · {settings.currency_code}
             </Text>
@@ -264,27 +310,27 @@ export default function SettingsScreen() {
           <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
           <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
             <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>
-              Symbol position
+              {t.symbolPosition}
             </Text>
             <SegmentedPicker
               options={['prefix', 'suffix']}
               value={settings.unit_position}
-              labels={['Prefix (RM 10)', 'Suffix (10 RM)']}
+              labels={[t.symbolPrefix, t.symbolSuffix]}
               onChange={(v) => updateSettings.mutate({ unit_position: v as UnitPosition })}
             />
           </View>
         </SectionCard>
 
         {/* ── Categories ── */}
-        <SectionLabel text="Categories" />
+        <SectionLabel text={t.sectionCategories} />
 
         <SubSectionHeader
-          label="Expense"
+          label={t.expenseSection}
           onAdd={() => setCatModal({ open: true, defaultType: 'expense' })}
         />
         <SectionCard>
           {expCats.length === 0 ? (
-            <EmptyRow text="No expense categories" />
+            <EmptyRow text={t.noExpenseCategories} />
           ) : (
             expCats.map((cat, idx) => (
               <View key={cat.id}>
@@ -300,12 +346,12 @@ export default function SettingsScreen() {
         </SectionCard>
 
         <SubSectionHeader
-          label="Income"
+          label={t.incomeSection}
           onAdd={() => setCatModal({ open: true, defaultType: 'income' })}
         />
         <SectionCard>
           {incCats.length === 0 ? (
-            <EmptyRow text="No income categories" />
+            <EmptyRow text={t.noIncomeCategories} />
           ) : (
             incCats.map((cat, idx) => (
               <View key={cat.id}>
@@ -322,13 +368,13 @@ export default function SettingsScreen() {
 
         {/* ── Account Groups ── */}
         <SubSectionHeader
-          label="Account Groups"
+          label={t.accountGroups}
           onAdd={() => setAcctGroupModal({ open: true })}
           topMargin={24}
         />
         <SectionCard>
           {groups.length === 0 ? (
-            <EmptyRow text="No account groups" />
+            <EmptyRow text={t.noAccountGroups} />
           ) : (
             groups.map((group, idx) => (
               <View key={group.id}>
@@ -345,7 +391,7 @@ export default function SettingsScreen() {
 
         {/* ── Accounts ── */}
         <SubSectionHeader
-          label="Accounts"
+          label={t.accounts}
           onAdd={() => setAcctModal({ open: true })}
           topMargin={16}
         />
@@ -413,7 +459,7 @@ export default function SettingsScreen() {
         })()}
 
         {/* ── Budgets ── */}
-        <SectionLabel text="Budgets" />
+        <SectionLabel text={t.sectionBudgets} />
 
         <BudgetMonthNav
           year={budgetYear}
@@ -426,7 +472,7 @@ export default function SettingsScreen() {
 
         <SectionCard>
           {budgets.length === 0 ? (
-            <EmptyRow text="No expense categories" />
+            <EmptyRow text={t.noExpenseCategories} />
           ) : (
             budgets.map((entry, idx) => (
               <View key={entry.category_id}>
@@ -448,7 +494,7 @@ export default function SettingsScreen() {
                     </Text>
                     {entry.override_amount !== null && entry.override_amount !== undefined && (
                       <Text style={{ fontSize: 12, color: colors.accent, marginTop: 2 }}>
-                        This month only
+                        {t.thisMonthOverride}
                       </Text>
                     )}
                   </View>
@@ -464,7 +510,7 @@ export default function SettingsScreen() {
                               : colors.textMuted,
                         }}
                       >
-                        {formatCurrency(entry.spent, settings)} spent
+                        {formatCurrency(entry.spent, settings)} {t.spent}
                       </Text>
                       <Text style={{ fontSize: 12, color: colors.textFaint, marginTop: 1 }}>
                         of {formatCurrency(entry.effective_amount, settings)}
@@ -472,7 +518,7 @@ export default function SettingsScreen() {
                     </View>
                   ) : (
                     <Text style={{ fontSize: 14, color: colors.textFaint, marginRight: 6 }}>
-                      Not set
+                      {t.notSet}
                     </Text>
                   )}
                   <Text style={{ fontSize: 18, color: colors.textFaint }}>›</Text>
@@ -484,13 +530,13 @@ export default function SettingsScreen() {
 
         {/* ── Recurring ── */}
         <SubSectionHeader
-          label="Recurring Transactions"
+          label={t.recurringTransactions}
           onAdd={() => setRecurringModal({ open: true })}
           topMargin={24}
         />
         <SectionCard>
           {recurringRules.length === 0 ? (
-            <EmptyRow text="No recurring rules" />
+            <EmptyRow text={t.noRecurringRules} />
           ) : (
             recurringRules.map((rule, idx) => (
               <View key={rule.id}>
@@ -514,8 +560,7 @@ export default function SettingsScreen() {
                       {rule.note}
                     </Text>
                     <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                      {rule.category_name} · {rule.account_name} ·{' '}
-                      {FREQUENCY_LABELS[rule.frequency]}
+                      {rule.category_name} · {rule.account_name} · {frequencyLabels[rule.frequency]}
                     </Text>
                   </View>
                   <Text
@@ -531,7 +576,7 @@ export default function SettingsScreen() {
                   </Text>
                   {!rule.active && (
                     <Text style={{ fontSize: 11, color: colors.textFaint, marginRight: 6 }}>
-                      Paused
+                      {t.paused}
                     </Text>
                   )}
                   <Text style={{ fontSize: 18, color: colors.textFaint }}>›</Text>
@@ -542,7 +587,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* ── Data ── */}
-        <SectionLabel text="Data" />
+        <SectionLabel text={t.sectionData} />
         <SectionCard>
           <TouchableOpacity
             onPress={() => setExportSheetVisible(true)}
@@ -553,7 +598,7 @@ export default function SettingsScreen() {
               paddingVertical: 14,
             }}
           >
-            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>Export CSV</Text>
+            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>{t.exportCSV}</Text>
             <Text style={{ fontSize: 18, color: colors.textFaint }}>↑</Text>
           </TouchableOpacity>
           <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
@@ -567,9 +612,9 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, color: colors.textPrimary }}>Import CSV</Text>
+              <Text style={{ fontSize: 15, color: colors.textPrimary }}>{t.importCSV}</Text>
               <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
-                Date, Type, Category, Account, Amount, Note
+                {t.importCSVDesc}
               </Text>
             </View>
             {importLoading ? (
@@ -581,7 +626,7 @@ export default function SettingsScreen() {
         </SectionCard>
 
         {/* ── About ── */}
-        <SectionLabel text="About" />
+        <SectionLabel text={t.sectionAbout} />
         <SectionCard>
           <View
             style={{
@@ -607,7 +652,7 @@ export default function SettingsScreen() {
               >
                 Ledgr
               </Text>
-              <Text style={{ fontSize: 14, color: colors.textMuted }}>Version 1.0.0</Text>
+              <Text style={{ fontSize: 14, color: colors.textMuted }}>{t.version} 1.0.0</Text>
             </View>
           </View>
         </SectionCard>
@@ -682,6 +727,7 @@ function BudgetMonthNav({
   loading?: boolean;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const [picking, setPicking] = useState(false);
   const [pickYear, setPickYear] = useState(year);
 
@@ -720,7 +766,7 @@ function BudgetMonthNav({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <TouchableOpacity onPress={openPicker} hitSlop={8}>
             <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
-              {MONTH_NAMES[month - 1]} {year}
+              {t.monthNames[month - 1]} {year}
             </Text>
           </TouchableOpacity>
           {loading && <ActivityIndicator size="small" color={colors.accent} />}
@@ -772,7 +818,7 @@ function BudgetMonthNav({
 
             {/* Month grid */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {MONTH_SHORT.map((name, i) => {
+              {t.monthShort.map((name, i) => {
                 const m = i + 1;
                 const isSelected = m === month && pickYear === year;
                 const isCurrent = isCurrentMonth(pickYear, m);
@@ -825,7 +871,7 @@ function BudgetMonthNav({
               }}
             >
               <Text style={{ fontSize: 14, fontWeight: '600', color: colors.accent }}>
-                This Month
+                {t.thisMonth}
               </Text>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -1018,6 +1064,7 @@ function CurrencyModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const updateSettings = useUpdateSettings();
 
   function select(preset: (typeof CURRENCY_PRESETS)[number]) {
@@ -1045,10 +1092,10 @@ function CurrencyModal({
           }}
         >
           <Text style={{ flex: 1, fontSize: 17, fontWeight: '600', color: colors.textPrimary }}>
-            Currency
+            {t.currency}
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Text style={{ fontSize: 15, color: colors.accent }}>Done</Text>
+            <Text style={{ fontSize: 15, color: colors.accent }}>{t.done}</Text>
           </TouchableOpacity>
         </View>
         <ScrollView>
@@ -1111,6 +1158,7 @@ function CategoryModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!category;
   const createCategory = useCreateCategory();
@@ -1208,7 +1256,7 @@ function CategoryModal({
             }}
           >
             <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
-              <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+              <Text style={{ fontSize: 15, color: colors.textMuted }}>{t.cancel}</Text>
             </TouchableOpacity>
             <Text
               style={{
@@ -1220,8 +1268,12 @@ function CategoryModal({
               }}
             >
               {isEdit
-                ? `Edit ${type === 'expense' ? 'Expense' : 'Income'} Category`
-                : `New ${type === 'expense' ? 'Expense' : 'Income'} Category`}
+                ? type === 'expense'
+                  ? t.editExpenseCategory
+                  : t.editIncomeCategory
+                : type === 'expense'
+                  ? t.newExpenseCategory
+                  : t.newIncomeCategory}
             </Text>
             <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
@@ -1231,12 +1283,12 @@ function CategoryModal({
                   color: name.trim() ? colors.accent : colors.textFaint,
                 }}
               >
-                Save
+                {t.save}
               </Text>
             </TouchableOpacity>
           </View>
           <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
-            <Text style={fieldLabel}>Name</Text>
+            <Text style={fieldLabel}>{t.name}</Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -1266,6 +1318,7 @@ function AccountGroupModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!group;
   const createGroup = useCreateAccountGroup();
@@ -1361,7 +1414,7 @@ function AccountGroupModal({
             }}
           >
             <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
-              <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+              <Text style={{ fontSize: 15, color: colors.textMuted }}>{t.cancel}</Text>
             </TouchableOpacity>
             <Text
               style={{
@@ -1372,7 +1425,7 @@ function AccountGroupModal({
                 color: colors.textPrimary,
               }}
             >
-              {isEdit ? 'Edit Group' : 'New Group'}
+              {isEdit ? t.editGroup : t.newGroup}
             </Text>
             <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
@@ -1382,12 +1435,12 @@ function AccountGroupModal({
                   color: name.trim() ? colors.accent : colors.textFaint,
                 }}
               >
-                Save
+                {t.save}
               </Text>
             </TouchableOpacity>
           </View>
           <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
-            <Text style={fieldLabel}>Name</Text>
+            <Text style={fieldLabel}>{t.name}</Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -1419,6 +1472,7 @@ function AccountModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!account;
   const createAccount = useCreateAccount();
@@ -1526,7 +1580,7 @@ function AccountModal({
             }}
           >
             <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
-              <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+              <Text style={{ fontSize: 15, color: colors.textMuted }}>{t.cancel}</Text>
             </TouchableOpacity>
             <Text
               style={{
@@ -1537,7 +1591,7 @@ function AccountModal({
                 color: colors.textPrimary,
               }}
             >
-              {isEdit ? 'Edit Account' : 'New Account'}
+              {isEdit ? t.editAccount : t.newAccount}
             </Text>
             <TouchableOpacity onPress={handleSave} style={{ minWidth: 60, alignItems: 'flex-end' }}>
               <Text
@@ -1547,12 +1601,12 @@ function AccountModal({
                   color: name.trim() ? colors.accent : colors.textFaint,
                 }}
               >
-                Save
+                {t.save}
               </Text>
             </TouchableOpacity>
           </View>
           <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
-            <Text style={fieldLabel}>Name</Text>
+            <Text style={fieldLabel}>{t.name}</Text>
             <TextInput
               value={name}
               onChangeText={setName}
@@ -1562,7 +1616,7 @@ function AccountModal({
               autoFocus={!isEdit}
               returnKeyType="next"
             />
-            <Text style={[fieldLabel, { marginTop: 20 }]}>Group</Text>
+            <Text style={[fieldLabel, { marginTop: 20 }]}>{t.group}</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -1603,7 +1657,7 @@ function AccountModal({
             </View>
             {!isEdit && (
               <>
-                <Text style={[fieldLabel, { marginTop: 20 }]}>Initial Balance</Text>
+                <Text style={[fieldLabel, { marginTop: 20 }]}>{t.initialBalance}</Text>
                 <TextInput
                   value={balance}
                   onChangeText={setBalance}
@@ -1639,6 +1693,7 @@ function BudgetSettingsModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const { fieldLabel, inputStyle } = useSharedStyles();
   const setDefault = useSetBudgetDefault();
   const setOverride = useSetBudgetOverride();
@@ -1710,10 +1765,12 @@ function BudgetSettingsModal({
 
   function handleRemove() {
     if (!entry) return;
-    const title = hasOverride ? 'Remove Override' : 'Remove Budget';
+    const title = hasOverride ? t.removeOverrideTitle : t.removeBudgetTitle;
     const message = hasOverride
-      ? `Remove the override for ${MONTH_NAMES[month - 1]} ${year}? It will revert to the default budget.`
-      : `Remove the budget for "${entry.category_name}"? All months without a monthly override will no longer have a budget.`;
+      ? t.removeOverrideMsg
+          .replace('{month}', t.monthNames[month - 1])
+          .replace('{year}', String(year))
+      : t.removeBudgetMsg.replace('{name}', entry.category_name);
     Alert.alert(title, message, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -1774,7 +1831,7 @@ function BudgetSettingsModal({
             }}
           >
             <TouchableOpacity onPress={handleClose} style={{ minWidth: 60 }}>
-              <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+              <Text style={{ fontSize: 15, color: colors.textMuted }}>{t.cancel}</Text>
             </TouchableOpacity>
             <Text
               style={{
@@ -1799,12 +1856,12 @@ function BudgetSettingsModal({
                   color: canSave ? colors.accent : colors.textFaint,
                 }}
               >
-                Save
+                {t.save}
               </Text>
             </TouchableOpacity>
           </View>
           <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 34 }}>
-            <Text style={fieldLabel}>Budget Amount</Text>
+            <Text style={fieldLabel}>{t.budgetAmount}</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}
@@ -1815,7 +1872,7 @@ function BudgetSettingsModal({
               autoFocus
               style={inputStyle}
             />
-            <Text style={[fieldLabel, { marginTop: 20 }]}>Apply to</Text>
+            <Text style={[fieldLabel, { marginTop: 20 }]}>{t.applyTo}</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -1845,7 +1902,9 @@ function BudgetSettingsModal({
                         color: active ? colors.textPrimary : colors.textMuted,
                       }}
                     >
-                      {s === 'onwards' ? `${MONTH_NAMES[month - 1]} onwards` : 'This month only'}
+                      {s === 'onwards'
+                        ? `${t.monthNames[month - 1]} ${t.onwards}`
+                        : t.thisMonthOnly}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -1853,8 +1912,10 @@ function BudgetSettingsModal({
             </View>
             <Text style={{ fontSize: 14, color: colors.textMuted, marginTop: 8 }}>
               {scope === 'onwards'
-                ? `Applies from ${MONTH_NAMES[month - 1]} onwards. Earlier months are unaffected.`
-                : `Only affects ${MONTH_NAMES[month - 1]} ${year}. Other months keep their budget.`}
+                ? t.appliesFromOnwards.replace('{month}', t.monthNames[month - 1])
+                : t.onlyAffectsMonth
+                    .replace('{month}', t.monthNames[month - 1])
+                    .replace('{year}', String(year))}
             </Text>
             {hasBudget && (
               <TouchableOpacity
@@ -1868,7 +1929,7 @@ function BudgetSettingsModal({
                 }}
               >
                 <Text style={{ fontSize: 15, fontWeight: '600', color: colors.expense }}>
-                  {hasOverride ? "Remove This Month's Override" : 'Remove Budget'}
+                  {hasOverride ? t.removeOverrideTitle : t.removeBudgetTitle}
                 </Text>
               </TouchableOpacity>
             )}
@@ -1895,6 +1956,7 @@ function ReassignModal({
   onClose: () => void;
 }) {
   const colors = useColors();
+  const t = useStrings();
   const reassignAndDelete = useReassignAndDeleteCategory();
   const options = categories.filter((c) => c.id !== category?.id && c.type === category?.type);
 
@@ -1919,10 +1981,10 @@ function ReassignModal({
           }}
         >
           <Text style={{ flex: 1, fontSize: 17, fontWeight: '600', color: colors.textPrimary }}>
-            Reassign Transactions
+            {t.reassignTitle}
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Text style={{ fontSize: 15, color: colors.textMuted }}>Cancel</Text>
+            <Text style={{ fontSize: 15, color: colors.textMuted }}>{t.cancel}</Text>
           </TouchableOpacity>
         </View>
 
@@ -1935,8 +1997,7 @@ function ReassignModal({
             lineHeight: 20,
           }}
         >
-          "{category?.name}" has {txCount} transaction{txCount !== 1 ? 's' : ''}. Choose a category
-          to move them to before deleting.
+          {t.reassignDesc.replace('{name}', category?.name ?? '').replace('{n}', String(txCount))}
         </Text>
 
         <View
@@ -1950,7 +2011,9 @@ function ReassignModal({
           {options.length === 0 ? (
             <View style={{ padding: 16, alignItems: 'center' }}>
               <Text style={{ fontSize: 14, color: colors.textMuted }}>
-                No other {category?.type} categories available.
+                {category?.type === 'expense'
+                  ? t.noOtherExpenseCategories
+                  : t.noOtherIncomeCategories}
               </Text>
             </View>
           ) : (

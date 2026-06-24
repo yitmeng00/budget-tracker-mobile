@@ -7,4 +7,5 @@ export const DEFAULT_SETTINGS: UserSettings = {
   currency_symbol: 'RM',
   unit_position: 'prefix',
   theme: 'system',
+  language: 'en',
 };

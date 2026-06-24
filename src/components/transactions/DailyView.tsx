@@ -3,6 +3,7 @@ import TransactionItem from './TransactionItem';
 import { formatCurrency } from '@/lib/currency';
 import { formatDateHeader } from '@/lib/date';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import type { Transaction, UserSettings } from '@/types';
 
 interface Section {
@@ -41,6 +42,7 @@ export default function DailyView({
   ListHeaderComponent,
 }: Props) {
   const colors = useColors();
+  const t = useStrings();
   const sections = groupByDate(transactions);
 
   return (
@@ -95,7 +97,7 @@ export default function DailyView({
       SectionSeparatorComponent={() => <View className="h-2" />}
       ListEmptyComponent={
         <View style={{ alignItems: 'center', paddingVertical: 64 }}>
-          <Text style={{ fontSize: 14, color: colors.textMuted }}>No transactions this month</Text>
+          <Text style={{ fontSize: 14, color: colors.textMuted }}>{t.noTransactionsThisMonth}</Text>
         </View>
       }
     />

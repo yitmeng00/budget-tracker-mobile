@@ -1,6 +1,7 @@
 import { View, Text } from 'react-native';
 import { formatCurrency } from '@/lib/currency';
 import { useColors } from '@/context/ThemeContext';
+import { useStrings } from '@/context/LanguageContext';
 import type { UserSettings } from '@/types';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export default function SummaryCards({ income, expenses, net, settings }: Props) {
   const colors = useColors();
+  const t = useStrings();
   const fmt = (n: number) => formatCurrency(n, settings);
 
   const cardStyle = {
@@ -27,14 +29,14 @@ export default function SummaryCards({ income, expenses, net, settings }: Props)
   return (
     <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
       <View style={cardStyle}>
-        <Text style={labelStyle}>Income</Text>
+        <Text style={labelStyle}>{t.income}</Text>
         <Text style={[valueStyle, { color: colors.income }]} numberOfLines={1} adjustsFontSizeToFit>
           {fmt(income)}
         </Text>
       </View>
 
       <View style={cardStyle}>
-        <Text style={labelStyle}>Expenses</Text>
+        <Text style={labelStyle}>{t.expenses}</Text>
         <Text
           style={[valueStyle, { color: colors.expense }]}
           numberOfLines={1}
@@ -45,7 +47,7 @@ export default function SummaryCards({ income, expenses, net, settings }: Props)
       </View>
 
       <View style={cardStyle}>
-        <Text style={labelStyle}>Net</Text>
+        <Text style={labelStyle}>{t.net}</Text>
         <Text
           style={[valueStyle, { color: net >= 0 ? colors.income : colors.expense }]}
           numberOfLines={1}

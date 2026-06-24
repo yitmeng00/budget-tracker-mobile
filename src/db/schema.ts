@@ -115,4 +115,9 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
   try {
     db.execSync(`ALTER TABLE settings ADD COLUMN theme TEXT NOT NULL DEFAULT 'system'`);
   } catch {}
+
+  // Migration: add language preference column
+  try {
+    db.execSync(`ALTER TABLE settings ADD COLUMN language TEXT NOT NULL DEFAULT 'en'`);
+  } catch {}
 }
