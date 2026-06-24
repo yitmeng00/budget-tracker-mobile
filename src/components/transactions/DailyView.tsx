@@ -2,7 +2,7 @@ import { SectionList, View, Text } from 'react-native';
 import TransactionItem from './TransactionItem';
 import { formatCurrency } from '@/lib/currency';
 import { formatDateHeader } from '@/lib/date';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import type { Transaction, UserSettings } from '@/types';
 
 interface Section {
@@ -40,6 +40,7 @@ export default function DailyView({
   onDuplicateTransaction,
   ListHeaderComponent,
 }: Props) {
+  const colors = useColors();
   const sections = groupByDate(transactions);
 
   return (
@@ -52,13 +53,25 @@ export default function DailyView({
       renderSectionHeader={({ section }) => {
         const net = section.income - section.expenses;
         return (
-          <View className="flex-row items-center justify-between px-4 py-2 bg-bg">
-            <Text className="text-text-muted text-xs font-semibold">
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              backgroundColor: colors.bg,
+            }}
+          >
+            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textMuted }}>
               {formatDateHeader(section.date)}
             </Text>
             <Text
-              style={{ color: net >= 0 ? colors.income : colors.expense }}
-              className="text-xs font-semibold"
+              style={{
+                color: net >= 0 ? colors.income : colors.expense,
+                fontSize: 12,
+                fontWeight: '600',
+              }}
             >
               {net >= 0 ? '+' : '-'}
               {formatCurrency(Math.abs(net), settings)}
@@ -74,13 +87,15 @@ export default function DailyView({
             onPress={onPressTransaction}
             onDuplicate={onDuplicateTransaction}
           />
-          {index < section.data.length - 1 && <View className="h-px bg-border ml-16" />}
+          {index < section.data.length - 1 && (
+            <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 64 }} />
+          )}
         </View>
       )}
       SectionSeparatorComponent={() => <View className="h-2" />}
       ListEmptyComponent={
-        <View className="items-center py-16">
-          <Text className="text-text-muted text-sm">No transactions this month</Text>
+        <View style={{ alignItems: 'center', paddingVertical: 64 }}>
+          <Text style={{ fontSize: 14, color: colors.textMuted }}>No transactions this month</Text>
         </View>
       }
     />

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useCategories } from '@/hooks/useCategories';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import type { TransactionFilters } from '@/types';
 
 interface Props {
@@ -18,6 +18,7 @@ const TYPE_OPTIONS: { label: string; value: TransactionFilters['type'] }[] = [
 ];
 
 export default function FilterSheet({ visible, onClose, filters, onChange }: Props) {
+  const colors = useColors();
   const { data: categories = [] } = useCategories();
   const backdrop = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(800)).current;

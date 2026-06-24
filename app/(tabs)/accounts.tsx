@@ -3,18 +3,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAccounts, useAccountGroups, useNetWorth } from '@/hooks/useAccounts';
 import { useSettings } from '@/hooks/useSettings';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { formatCurrency } from '@/lib/currency';
 import type { Account, AccountGroup, UserSettings } from '@/types';
 
 export default function AccountsScreen() {
+  const colors = useColors();
   const { data: groups = [] } = useAccountGroups();
   const { data: accounts = [] } = useAccounts();
   const { data: netWorth = 0 } = useNetWorth();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -59,6 +60,7 @@ function NetWorthCard({
   accountCount: number;
   settings: UserSettings;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -109,6 +111,7 @@ function GroupSection({
   accounts: Account[];
   settings: UserSettings;
 }) {
+  const colors = useColors();
   const groupTotal = accounts.reduce((s, a) => s + a.balance, 0);
 
   return (
@@ -167,6 +170,7 @@ function GroupSection({
 }
 
 function AccountRow({ account, settings }: { account: Account; settings: UserSettings }) {
+  const colors = useColors();
   const isNegative = account.balance < 0;
 
   return (

@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import type { ImportResult } from '@/services/importExport';
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function ImportSheet({ visible, onClose, result }: Props) {
+  const colors = useColors();
   const backdrop = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(800)).current;
 

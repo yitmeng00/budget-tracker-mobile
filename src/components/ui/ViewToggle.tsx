@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import type { ViewMode } from '@/types';
 
 interface Props {
@@ -14,6 +14,7 @@ const MODES: { key: ViewMode; label: string }[] = [
 ];
 
 export default function ViewToggle({ value, onChange }: Props) {
+  const colors = useColors();
   return (
     <View
       style={{

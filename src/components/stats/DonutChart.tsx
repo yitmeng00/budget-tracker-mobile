@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { formatCurrency } from '@/lib/currency';
 import type { CategoryStats, UserSettings } from '@/types';
 
@@ -42,6 +42,7 @@ interface Props {
 }
 
 export default function DonutChart({ items, settings }: Props) {
+  const colors = useColors();
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const total = items.reduce((s, c) => s + c.total, 0);

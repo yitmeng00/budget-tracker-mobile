@@ -20,7 +20,7 @@ import {
   useDeleteTransaction,
 } from '@/hooks/useTransactions';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { todayISO, currentTimeISO, formatDateISO, formatDateHeader } from '@/lib/date';
 import type { Transaction, TransactionType } from '@/types';
 
@@ -49,6 +49,7 @@ export default function AddTransactionSheet({
   duplicateFrom,
   onDuplicate,
 }: Props) {
+  const colors = useColors();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();

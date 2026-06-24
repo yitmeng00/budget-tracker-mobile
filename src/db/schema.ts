@@ -10,7 +10,8 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
       currency_country TEXT NOT NULL DEFAULT 'Malaysia',
       currency_code TEXT NOT NULL DEFAULT 'MYR',
       currency_symbol TEXT NOT NULL DEFAULT 'RM',
-      unit_position TEXT NOT NULL DEFAULT 'prefix'
+      unit_position TEXT NOT NULL DEFAULT 'prefix',
+      theme TEXT NOT NULL DEFAULT 'system'
     );
 
     CREATE TABLE IF NOT EXISTS account_groups (
@@ -109,4 +110,9 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
   } catch {
     // column already exists — safe to ignore
   }
+
+  // Migration: add theme preference column
+  try {
+    db.execSync(`ALTER TABLE settings ADD COLUMN theme TEXT NOT NULL DEFAULT 'system'`);
+  } catch {}
 }

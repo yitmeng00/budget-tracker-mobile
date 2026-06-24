@@ -6,7 +6,7 @@ import { useMonth } from '@/hooks/useMonth';
 import { useTransactions, useSearchTransactions } from '@/hooks/useTransactions';
 import { useSettings } from '@/hooks/useSettings';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import MonthHeader, { YearHeader } from '@/components/ui/MonthHeader';
 import ViewToggle from '@/components/ui/ViewToggle';
 import DailyView from '@/components/transactions/DailyView';
@@ -17,6 +17,7 @@ import AddTransactionSheet from '@/components/transactions/AddTransactionSheet';
 import type { Transaction, ViewMode, TransactionFilters } from '@/types';
 
 export default function TransactionsScreen() {
+  const colors = useColors();
   const { year, month, prev, next, jumpTo } = useMonth();
   const { data: transactions = [], isPlaceholderData } = useTransactions(year, month);
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
@@ -74,7 +75,7 @@ export default function TransactionsScreen() {
   const isMonthly = viewMode === 'monthly';
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {/* Header — hidden while searching to avoid month-nav confusion */}
       {!isSearchActive &&
         (isMonthly ? (
@@ -237,8 +238,9 @@ export default function TransactionsScreen() {
 
       <TouchableOpacity
         onPress={openAdd}
-        className="absolute bottom-6 right-5 w-14 h-14 bg-accent rounded-full items-center justify-center"
+        className="absolute bottom-6 right-5 w-14 h-14 rounded-full items-center justify-center"
         style={{
+          backgroundColor: colors.accent,
           elevation: 4,
           shadowColor: '#2563eb',
           shadowOpacity: 0.35,

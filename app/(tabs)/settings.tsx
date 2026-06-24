@@ -41,7 +41,8 @@ import RecurringRuleSheet from '@/components/settings/RecurringRuleSheet';
 import type { ImportResult } from '@/services/importExport';
 import type { RecurringRule } from '@/types';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
-import { colors, categoryColors } from '@/lib/colors';
+import { categoryColors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { formatCurrency } from '@/lib/currency';
 import { MONTH_NAMES, MONTH_SHORT } from '@/lib/constants';
 import type {
@@ -52,6 +53,7 @@ import type {
   UserSettings,
   WeekDay,
   UnitPosition,
+  ThemeMode,
 } from '@/types';
 
 function autoColor(name: string): string {
@@ -94,6 +96,7 @@ type BudgetModalState = { open: boolean; entry?: BudgetEntry; year?: number; mon
 type ReassignModalState = { open: boolean; cat?: Category; txCount?: number };
 
 export default function SettingsScreen() {
+  const colors = useColors();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
@@ -206,7 +209,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -222,6 +225,20 @@ export default function SettingsScreen() {
               options={WEEK_DAYS}
               value={settings.week_start}
               onChange={(v) => updateSettings.mutate({ week_start: v as WeekDay })}
+            />
+          </View>
+        </SectionCard>
+
+        {/* ── Appearance ── */}
+        <SectionLabel text="Appearance" />
+        <SectionCard>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
+            <Text style={{ fontSize: 14, color: colors.textMuted, marginBottom: 10 }}>Theme</Text>
+            <SegmentedPicker
+              options={['light', 'dark', 'system']}
+              value={settings.theme}
+              labels={['Light', 'Dark', 'System']}
+              onChange={(v) => updateSettings.mutate({ theme: v as ThemeMode })}
             />
           </View>
         </SectionCard>
@@ -664,6 +681,7 @@ function BudgetMonthNav({
   onJump: (year: number, month: number) => void;
   loading?: boolean;
 }) {
+  const colors = useColors();
   const [picking, setPicking] = useState(false);
   const [pickYear, setPickYear] = useState(year);
 
@@ -820,6 +838,7 @@ function BudgetMonthNav({
 // ─── Shared layout helpers ────────────────────────────────────────────────────
 
 function SectionLabel({ text }: { text: string }) {
+  const colors = useColors();
   return (
     <Text
       style={{
@@ -847,6 +866,7 @@ function SubSectionHeader({
   onAdd: () => void;
   topMargin?: number;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -867,6 +887,7 @@ function SubSectionHeader({
 }
 
 function SectionCard({ children }: { children: React.ReactNode }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -883,10 +904,12 @@ function SectionCard({ children }: { children: React.ReactNode }) {
 }
 
 function RowDivider() {
+  const colors = useColors();
   return <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />;
 }
 
 function EmptyRow({ text }: { text: string }) {
+  const colors = useColors();
   return (
     <View style={{ padding: 16, alignItems: 'center' }}>
       <Text style={{ fontSize: 14, color: colors.textMuted }}>{text}</Text>
@@ -905,6 +928,7 @@ function SegmentedPicker({
   labels?: string[];
   onChange: (v: string) => void;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -962,6 +986,7 @@ function SettingsRow({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const colors = useColors();
   return (
     <View
       style={{
@@ -992,6 +1017,7 @@ function CurrencyModal({
   settings: UserSettings;
   onClose: () => void;
 }) {
+  const colors = useColors();
   const updateSettings = useUpdateSettings();
 
   function select(preset: (typeof CURRENCY_PRESETS)[number]) {
@@ -1084,6 +1110,8 @@ function CategoryModal({
   defaultType?: 'expense' | 'income';
   onClose: () => void;
 }) {
+  const colors = useColors();
+  const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!category;
   const createCategory = useCreateCategory();
   const updateCategory = useUpdateCategory();
@@ -1237,6 +1265,8 @@ function AccountGroupModal({
   group?: AccountGroup;
   onClose: () => void;
 }) {
+  const colors = useColors();
+  const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!group;
   const createGroup = useCreateAccountGroup();
   const updateGroup = useUpdateAccountGroup();
@@ -1388,6 +1418,8 @@ function AccountModal({
   groups: AccountGroup[];
   onClose: () => void;
 }) {
+  const colors = useColors();
+  const { fieldLabel, inputStyle } = useSharedStyles();
   const isEdit = !!account;
   const createAccount = useCreateAccount();
   const updateAccount = useUpdateAccount();
@@ -1606,6 +1638,8 @@ function BudgetSettingsModal({
   month: number;
   onClose: () => void;
 }) {
+  const colors = useColors();
+  const { fieldLabel, inputStyle } = useSharedStyles();
   const setDefault = useSetBudgetDefault();
   const setOverride = useSetBudgetOverride();
 
@@ -1860,6 +1894,7 @@ function ReassignModal({
   categories: Category[];
   onClose: () => void;
 }) {
+  const colors = useColors();
   const reassignAndDelete = useReassignAndDeleteCategory();
   const options = categories.filter((c) => c.id !== category?.id && c.type === category?.type);
 
@@ -1944,18 +1979,22 @@ function ReassignModal({
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
-const fieldLabel: import('react-native').TextStyle = {
-  fontSize: 14,
-  fontWeight: '600',
-  color: colors.textMuted,
-  marginBottom: 8,
-};
-
-const inputStyle: import('react-native').TextStyle = {
-  backgroundColor: colors.surface,
-  borderRadius: 12,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
-  fontSize: 15,
-  color: colors.textPrimary,
-};
+function useSharedStyles() {
+  const colors = useColors();
+  return {
+    fieldLabel: {
+      fontSize: 14,
+      fontWeight: '600' as const,
+      color: colors.textMuted,
+      marginBottom: 8,
+    } as import('react-native').TextStyle,
+    inputStyle: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 15,
+      color: colors.textPrimary,
+    } as import('react-native').TextStyle,
+  };
+}

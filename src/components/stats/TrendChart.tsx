@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { MONTH_SHORT, MONTH_NAMES } from '@/lib/constants';
 import { formatCurrency } from '@/lib/currency';
 import type { MonthlySummary, UserSettings } from '@/types';
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function TrendChart({ months, settings }: Props) {
+  const colors = useColors();
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
   if (months.length === 0) {

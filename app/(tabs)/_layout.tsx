@@ -1,22 +1,25 @@
 import { Tabs } from 'expo-router';
 import { LayoutList, BarChart2, Wallet, Settings } from 'lucide-react-native';
 import { Platform } from 'react-native';
+import { useColors } from '@/context/ThemeContext';
 
 export default function TabLayout() {
+  const colors = useColors();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopColor: '#e0e7f7',
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 84 : 64,
           paddingBottom: Platform.OS === 'ios' ? 28 : 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: '#2563eb',
-        tabBarInactiveTintColor: '#8a96b8',
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',
