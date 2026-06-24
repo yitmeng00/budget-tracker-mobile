@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { getDb } from '@/db/client';
+import { processRecurringTransactions } from '@/services/recurring';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,6 +17,10 @@ export default function RootLayout() {
   useEffect(() => {
     // Open DB and run schema + seed synchronously on first mount
     getDb();
+    const created = processRecurringTransactions();
+    if (created > 0) {
+      queryClient.invalidateQueries();
+    }
   }, []);
 
   return (

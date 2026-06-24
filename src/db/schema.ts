@@ -62,6 +62,35 @@ export function initSchema(db: SQLite.SQLiteDatabase): void {
     );
   `);
 
+  // Recurring rules table
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS recurring_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+      account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+      amount REAL NOT NULL,
+      note TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      frequency TEXT NOT NULL DEFAULT 'monthly',
+      start_date TEXT NOT NULL DEFAULT (date('now')),
+      last_created_date TEXT,
+      active INTEGER NOT NULL DEFAULT 1
+    )
+  `);
+
+  // Migrations: add new frequency-based columns to existing installs
+  try {
+    db.execSync(`ALTER TABLE recurring_rules ADD COLUMN frequency TEXT NOT NULL DEFAULT 'monthly'`);
+  } catch {}
+  try {
+    db.execSync(
+      `ALTER TABLE recurring_rules ADD COLUMN start_date TEXT NOT NULL DEFAULT (date('now'))`,
+    );
+  } catch {}
+  try {
+    db.execSync(`ALTER TABLE recurring_rules ADD COLUMN last_created_date TEXT`);
+  } catch {}
+
   // Migration: add description column if it doesn't exist yet
   try {
     db.execSync(`ALTER TABLE transactions ADD COLUMN description TEXT NOT NULL DEFAULT ''`);
