@@ -12,9 +12,15 @@ interface Props {
   year: number;
   settings: UserSettings;
   onPressTransaction?: (t: Transaction) => void;
+  onDuplicateTransaction?: (t: Transaction) => void;
 }
 
-export default function MonthlyView({ year, settings, onPressTransaction }: Props) {
+export default function MonthlyView({
+  year,
+  settings,
+  onPressTransaction,
+  onDuplicateTransaction,
+}: Props) {
   const { data: months = [] } = useMonthsForYear(year);
 
   return (
@@ -34,6 +40,7 @@ export default function MonthlyView({ year, settings, onPressTransaction }: Prop
                 year={year}
                 settings={settings}
                 onPressTransaction={onPressTransaction}
+                onDuplicateTransaction={onDuplicateTransaction}
               />
             ))
         )}
@@ -47,11 +54,13 @@ function MonthRow({
   year,
   settings,
   onPressTransaction,
+  onDuplicateTransaction,
 }: {
   summary: MonthlySummary;
   year: number;
   settings: UserSettings;
   onPressTransaction?: (t: Transaction) => void;
+  onDuplicateTransaction?: (t: Transaction) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const { data: transactions = [] } = useTransactions(year, summary.month);
@@ -109,7 +118,12 @@ function MonthRow({
                 {idx > 0 && (
                   <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
                 )}
-                <TransactionItem transaction={t} settings={settings} onPress={onPressTransaction} />
+                <TransactionItem
+                  transaction={t}
+                  settings={settings}
+                  onPress={onPressTransaction}
+                  onDuplicate={onDuplicateTransaction}
+                />
               </View>
             ))
           )}

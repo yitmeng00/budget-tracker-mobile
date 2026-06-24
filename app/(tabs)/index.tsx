@@ -24,6 +24,7 @@ export default function TransactionsScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
   const [sheetVisible, setSheetVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
+  const [duplicateSource, setDuplicateSource] = useState<Transaction | undefined>();
 
   const currentYear = new Date().getFullYear();
   const [yearView, setYearView] = useState(currentYear);
@@ -56,6 +57,13 @@ export default function TransactionsScreen() {
   function closeSheet() {
     setSheetVisible(false);
     setEditingTransaction(undefined);
+    setDuplicateSource(undefined);
+  }
+
+  function handleDuplicate(t: Transaction) {
+    setEditingTransaction(undefined);
+    setDuplicateSource(t);
+    setSheetVisible(true);
   }
 
   function clearSearch() {
@@ -179,6 +187,7 @@ export default function TransactionsScreen() {
               transactions={searchResults}
               settings={settings}
               onPressTransaction={openEdit}
+              onDuplicateTransaction={handleDuplicate}
               ListHeaderComponent={
                 <Text
                   style={{
@@ -202,6 +211,7 @@ export default function TransactionsScreen() {
               transactions={transactions}
               settings={settings}
               onPressTransaction={openEdit}
+              onDuplicateTransaction={handleDuplicate}
             />
           )}
           {viewMode === 'calendar' && (
@@ -211,10 +221,16 @@ export default function TransactionsScreen() {
               transactions={transactions}
               settings={settings}
               onPressTransaction={openEdit}
+              onDuplicateTransaction={handleDuplicate}
             />
           )}
           {viewMode === 'monthly' && (
-            <MonthlyView year={yearView} settings={settings} onPressTransaction={openEdit} />
+            <MonthlyView
+              year={yearView}
+              settings={settings}
+              onPressTransaction={openEdit}
+              onDuplicateTransaction={handleDuplicate}
+            />
           )}
         </View>
       )}
@@ -245,6 +261,8 @@ export default function TransactionsScreen() {
         visible={sheetVisible}
         onClose={closeSheet}
         transaction={editingTransaction}
+        duplicateFrom={duplicateSource}
+        onDuplicate={handleDuplicate}
       />
     </SafeAreaView>
   );
