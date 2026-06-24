@@ -77,6 +77,16 @@ const CURRENCY_PRESETS = [
 
 const WEEK_DAYS: WeekDay[] = ['Sunday', 'Monday', 'Saturday'];
 
+const FREQUENCY_LABELS = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  biweekly: 'Every 2 weeks',
+  monthly: 'Monthly',
+  end_of_month: 'End of month',
+  bimonthly: 'Every 2 months',
+  annually: 'Annually',
+};
+
 type CatModalState = { open: boolean; cat?: Category; defaultType?: 'expense' | 'income' };
 type AcctModalState = { open: boolean; acct?: Account };
 type AcctGroupModalState = { open: boolean; group?: AccountGroup };
@@ -488,7 +498,7 @@ export default function SettingsScreen() {
                     </Text>
                     <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
                       {rule.category_name} · {rule.account_name} ·{' '}
-                      {rule.frequency.replace('_', ' ')}
+                      {FREQUENCY_LABELS[rule.frequency]}
                     </Text>
                   </View>
                   <Text
