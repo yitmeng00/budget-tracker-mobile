@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { MONTH_NAMES, MONTH_SHORT } from '@/lib/constants';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 
 interface Props {
   year: number;
@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Props) {
+  const colors = useColors();
   const [picking, setPicking] = useState(false);
   const [pickYear, setPickYear] = useState(year);
 
@@ -38,13 +39,24 @@ export default function MonthHeader({ year, month, onPrev, onNext, onJump }: Pro
 
   return (
     <>
-      <View className="flex-row items-center justify-between bg-surface px-4 py-3 border-b border-border">
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: colors.surface,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+      >
         <TouchableOpacity onPress={onPrev} hitSlop={12} className="p-1">
           <ChevronLeft color={colors.textMuted} size={22} />
         </TouchableOpacity>
 
         <TouchableOpacity onPress={openPicker} hitSlop={8}>
-          <Text className="text-text-primary text-base font-semibold">
+          <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary }}>
             {MONTH_NAMES[month - 1]} {year}
           </Text>
         </TouchableOpacity>
@@ -171,13 +183,25 @@ interface YearHeaderProps {
 }
 
 export function YearHeader({ year, onPrev, onNext, disableNext }: YearHeaderProps) {
+  const colors = useColors();
   return (
-    <View className="flex-row items-center justify-between bg-surface px-4 py-3 border-b border-border">
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: colors.surface,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+      }}
+    >
       <TouchableOpacity onPress={onPrev} hitSlop={12} className="p-1">
         <ChevronLeft color={colors.textMuted} size={22} />
       </TouchableOpacity>
 
-      <Text className="text-text-primary text-base font-semibold">{year}</Text>
+      <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textPrimary }}>{year}</Text>
 
       <TouchableOpacity onPress={onNext} hitSlop={12} className="p-1" disabled={disableNext}>
         <ChevronRight color={disableNext ? colors.border : colors.textMuted} size={22} />

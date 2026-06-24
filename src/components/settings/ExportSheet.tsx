@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated, Alert } from 'react-native';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { MONTH_SHORT } from '@/lib/constants';
 import { exportTransactionsCSV, type ExportScope } from '@/services/importExport';
 
@@ -31,6 +31,7 @@ for (let i = 0; i < 24; i++) {
 const YEARS: number[] = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
 
 export default function ExportSheet({ visible, onClose }: Props) {
+  const colors = useColors();
   const backdrop = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(800)).current;
 

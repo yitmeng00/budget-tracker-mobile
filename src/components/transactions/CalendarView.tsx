@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { todayISO } from '@/lib/date';
 import { formatCurrency } from '@/lib/currency';
 import TransactionItem from './TransactionItem';
@@ -68,6 +68,7 @@ export default function CalendarView({
   onPressTransaction,
   onDuplicateTransaction,
 }: Props) {
+  const colors = useColors();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const weekStart = settings.week_start;

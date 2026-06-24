@@ -15,7 +15,7 @@ import MonthHeader, { YearHeader } from '@/components/ui/MonthHeader';
 import SummaryCards from '@/components/transactions/SummaryCards';
 import TrendChart from '@/components/stats/TrendChart';
 import DonutChart from '@/components/stats/DonutChart';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { formatCurrency } from '@/lib/currency';
 import { useBudgets } from '@/hooks/useBudgets';
 import type { BudgetEntry, CategoryStats, UserSettings } from '@/types';
@@ -23,6 +23,7 @@ import type { BudgetEntry, CategoryStats, UserSettings } from '@/types';
 type Period = 'month' | 'year';
 
 export default function StatsScreen() {
+  const colors = useColors();
   const [period, setPeriod] = useState<Period>('month');
   const { year, month, prev, next, jumpTo } = useMonth();
   const currentYear = new Date().getFullYear();
@@ -58,7 +59,7 @@ export default function StatsScreen() {
   const incCats = period === 'month' ? incCatsMonth : incCatsYear;
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {/* Navigation */}
       {period === 'month' ? (
         <MonthHeader year={year} month={month} onPrev={prev} onNext={next} onJump={jumpTo} />
@@ -189,6 +190,7 @@ function BudgetBreakdown({
   budgets: BudgetEntry[];
   settings: UserSettings;
 }) {
+  const colors = useColors();
   const budgeted = budgets.filter((b) => b.effective_amount !== null);
   const overCount = budgeted.filter((b) => b.spent > (b.effective_amount ?? 0)).length;
 
@@ -304,6 +306,7 @@ function BudgetBreakdown({
 }
 
 function SectionLabel({ text }: { text: string }) {
+  const colors = useColors();
   return (
     <Text
       style={{
@@ -328,6 +331,7 @@ function CategoryBreakdown({
   items: CategoryStats[];
   settings: UserSettings;
 }) {
+  const colors = useColors();
   const total = items.reduce((s, c) => s + c.total, 0);
   return (
     <View

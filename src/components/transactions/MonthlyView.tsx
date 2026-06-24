@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useMonthsForYear } from '@/hooks/useStats';
 import { useTransactions } from '@/hooks/useTransactions';
 import { formatCurrency } from '@/lib/currency';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { MONTH_NAMES } from '@/lib/constants';
 import TransactionItem from './TransactionItem';
 import type { MonthlySummary, Transaction, UserSettings } from '@/types';
@@ -21,6 +21,7 @@ export default function MonthlyView({
   onPressTransaction,
   onDuplicateTransaction,
 }: Props) {
+  const colors = useColors();
   const { data: months = [] } = useMonthsForYear(year);
 
   return (
@@ -62,6 +63,7 @@ function MonthRow({
   onPressTransaction?: (t: Transaction) => void;
   onDuplicateTransaction?: (t: Transaction) => void;
 }) {
+  const colors = useColors();
   const [expanded, setExpanded] = useState(false);
   const { data: transactions = [] } = useTransactions(year, summary.month);
 

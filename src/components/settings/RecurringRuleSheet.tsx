@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { colors } from '@/lib/colors';
+import { useColors } from '@/context/ThemeContext';
 import { useCategories } from '@/hooks/useCategories';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useSettings } from '@/hooks/useSettings';
@@ -68,6 +68,7 @@ function frequencyDescription(freq: RecurringFrequency, startDate: string): stri
 }
 
 export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
+  const colors = useColors();
   const isEdit = !!rule;
   const { data: categories = [] } = useCategories();
   const { data: accounts = [] } = useAccounts();
