@@ -79,22 +79,23 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
   const backdrop = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(800)).current;
 
-  const todayStr = toDateStr(new Date());
-
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState('');
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [accountId, setAccountId] = useState<number | null>(null);
   const [frequency, setFrequency] = useState<RecurringFrequency>('monthly');
-  const [startDate, setStartDate] = useState(todayStr);
+  const [startDate, setStartDate] = useState(toDateStr(new Date()));
   const [note, setNote] = useState('');
   const [description, setDescription] = useState('');
   const [active, setActive] = useState(true);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [lastRule, setLastRule] = useState<RecurringRule | undefined>();
-  if (rule !== lastRule) {
-    setLastRule(rule);
+  useEffect(() => {
+    if (!visible) {
+      // Pre-reset amount while offscreen so next open starts with a narrow TextInput
+      setAmount('');
+      return;
+    }
     if (rule) {
       setType(rule.amount > 0 ? 'income' : 'expense');
       setAmount(String(Math.abs(rule.amount)));
@@ -111,12 +112,14 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
       setCategoryId(null);
       setAccountId(accounts[0]?.id ?? null);
       setFrequency('monthly');
-      setStartDate(todayStr);
+      setStartDate(toDateStr(new Date()));
       setNote('');
       setDescription('');
       setActive(true);
     }
-  }
+    setShowDatePicker(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   function handleClose() {
     setShowDatePicker(false);
@@ -154,7 +157,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
 
   const filteredCategories = categories.filter((c) => c.type === type);
 
-  function handleSave() {
+  async function handleSave() {
     const parsed = parseFloat(amount);
     if (isNaN(parsed) || parsed <= 0) {
       Alert.alert('Invalid amount', 'Please enter a valid amount.');
@@ -184,12 +187,16 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
       start_date: startDate,
     };
 
-    if (isEdit && rule) {
-      updateRule.mutate({ id: rule.id, data: { ...data, active } });
-    } else {
-      createRule.mutate(data);
+    try {
+      if (isEdit && rule) {
+        await updateRule.mutateAsync({ id: rule.id, data: { ...data, active } });
+      } else {
+        await createRule.mutateAsync(data);
+      }
+      handleClose();
+    } catch {
+      // onError in the hook shows the alert
     }
-    handleClose();
   }
 
   function handleDelete() {
@@ -199,9 +206,13 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () => {
-          deleteRule.mutate(rule.id);
-          handleClose();
+        onPress: async () => {
+          try {
+            await deleteRule.mutateAsync(rule.id);
+            handleClose();
+          } catch {
+            // onError in the hook shows the alert
+          }
         },
       },
     ]);
