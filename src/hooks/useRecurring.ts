@@ -1,4 +1,3 @@
-import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getRecurringRules,
@@ -6,14 +5,9 @@ import {
   updateRecurringRule,
   deleteRecurringRule,
 } from '../services/recurring';
+import { showError } from './utils';
 
 const KEY = ['recurring_rules'];
-
-function showError(err: unknown, fallback: string) {
-  const msg = err instanceof Error ? err.message : '';
-  const isOurs = msg && !/^(sqlite|SqliteError|SQLITE)/i.test(msg);
-  Alert.alert('Error', isOurs ? msg : fallback);
-}
 
 export function useRecurringRules() {
   return useQuery({ queryKey: KEY, queryFn: getRecurringRules });

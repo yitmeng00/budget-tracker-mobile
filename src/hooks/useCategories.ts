@@ -1,4 +1,3 @@
-import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getCategories,
@@ -7,13 +6,8 @@ import {
   deleteCategory,
   reassignAndDeleteCategory,
 } from '../services/categories';
+import { showError } from './utils';
 import type { Category } from '../types';
-
-function showError(err: unknown, fallback: string) {
-  const msg = err instanceof Error ? err.message : '';
-  const isOurs = msg && !/^(sqlite|SqliteError|SQLITE)/i.test(msg);
-  Alert.alert('Error', isOurs ? msg : fallback);
-}
 
 export function useCategories() {
   return useQuery({ queryKey: ['categories'], queryFn: getCategories });

@@ -60,6 +60,10 @@ export default function StatsScreen() {
   const expCats = period === 'month' ? expCatsMonth : expCatsYear;
   const incCats = period === 'month' ? incCatsMonth : incCatsYear;
 
+  const summaryIncome = period === 'month' ? monthData.income : yearlySummary.income;
+  const summaryExpenses = period === 'month' ? monthData.expenses : yearlySummary.expenses;
+  const summaryNet = period === 'month' ? monthlyNet : yearlyNet;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {/* Navigation */}
@@ -76,21 +80,12 @@ export default function StatsScreen() {
 
       <View style={{ flex: 1, opacity: isStale ? 0.4 : 1 }}>
         {/* Summary cards */}
-        {period === 'month' ? (
-          <SummaryCards
-            income={monthData.income}
-            expenses={monthData.expenses}
-            net={monthlyNet}
-            settings={settings}
-          />
-        ) : (
-          <SummaryCards
-            income={yearlySummary.income}
-            expenses={yearlySummary.expenses}
-            net={yearlyNet}
-            settings={settings}
-          />
-        )}
+        <SummaryCards
+          income={summaryIncome}
+          expenses={summaryExpenses}
+          net={summaryNet}
+          settings={settings}
+        />
 
         {/* Period toggle */}
         <View

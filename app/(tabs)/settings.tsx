@@ -38,6 +38,7 @@ import { importTransactionsCSV } from '@/services/importExport';
 import ImportSheet from '@/components/settings/ImportSheet';
 import ExportSheet from '@/components/settings/ExportSheet';
 import RecurringRuleSheet from '@/components/settings/RecurringRuleSheet';
+import { useMonth } from '@/hooks/useMonth';
 import type { ImportResult } from '@/services/importExport';
 import type { RecurringRule } from '@/types';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
@@ -125,36 +126,23 @@ export default function SettingsScreen() {
         setImportResultVisible(true);
       }
     } catch (e) {
-      Alert.alert('Import Failed', (e as Error).message);
+      Alert.alert(t.importFailed, (e as Error).message);
     } finally {
       setImportLoading(false);
     }
   }
 
-  const now = new Date();
-  const [budgetYear, setBudgetYear] = useState(now.getFullYear());
-  const [budgetMonth, setBudgetMonth] = useState(now.getMonth() + 1);
+  const {
+    year: budgetYear,
+    month: budgetMonth,
+    prev: prevBudgetMonth,
+    next: nextBudgetMonth,
+    jumpTo: jumpBudgetMonth,
+  } = useMonth();
   const { data: budgets = [], isPlaceholderData: budgetsStale } = useBudgets(
     budgetYear,
     budgetMonth,
   );
-
-  function prevBudgetMonth() {
-    if (budgetMonth === 1) {
-      setBudgetYear((y) => y - 1);
-      setBudgetMonth(12);
-    } else setBudgetMonth((m) => m - 1);
-  }
-  function nextBudgetMonth() {
-    if (budgetMonth === 12) {
-      setBudgetYear((y) => y + 1);
-      setBudgetMonth(1);
-    } else setBudgetMonth((m) => m + 1);
-  }
-  function jumpBudgetMonth(y: number, m: number) {
-    setBudgetYear(y);
-    setBudgetMonth(m);
-  }
 
   const [currencyModal, setCurrencyModal] = useState(false);
   const [catModal, setCatModal] = useState<CatModalState>({ open: false });
@@ -171,9 +159,9 @@ export default function SettingsScreen() {
 
   function handleDeleteCat(cat: Category) {
     Alert.alert(t.deleteCategoryTitle, t.confirmDeleteMsg.replace('{name}', cat.name), [
-      { text: 'Cancel', style: 'cancel' },
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Delete',
+        text: t.delete,
         style: 'destructive',
         onPress: async () => {
           const count = await getCategoryTransactionCount(cat.id);
@@ -189,9 +177,9 @@ export default function SettingsScreen() {
 
   function handleDeleteGroup(group: AccountGroup) {
     Alert.alert(t.deleteGroupTitle, t.confirmDeleteMsg.replace('{name}', group.name), [
-      { text: 'Cancel', style: 'cancel' },
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Delete',
+        text: t.delete,
         style: 'destructive',
         onPress: () => deleteAccountGroup.mutate(group.id),
       },
@@ -200,9 +188,9 @@ export default function SettingsScreen() {
 
   function handleDeleteAcct(acct: Account) {
     Alert.alert(t.deleteAccountTitle, t.confirmDeleteMsg.replace('{name}', acct.name), [
-      { text: 'Cancel', style: 'cancel' },
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Delete',
+        text: t.delete,
         style: 'destructive',
         onPress: () => deleteAccount.mutate(acct.id),
       },
@@ -1772,9 +1760,9 @@ function BudgetSettingsModal({
           .replace('{year}', String(year))
       : t.removeBudgetMsg.replace('{name}', entry.category_name);
     Alert.alert(title, message, [
-      { text: 'Cancel', style: 'cancel' },
+      { text: t.cancel, style: 'cancel' },
       {
-        text: 'Remove',
+        text: t.remove,
         style: 'destructive',
         onPress: () => {
           if (hasOverride) {

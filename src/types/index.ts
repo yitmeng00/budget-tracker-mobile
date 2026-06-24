@@ -8,7 +8,7 @@ export interface TransactionFilters {
 }
 export type UnitPosition = 'prefix' | 'suffix';
 export type CategoryType = 'income' | 'expense';
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = CategoryType;
 export type ViewMode = 'daily' | 'calendar' | 'monthly';
 export type StatsPeriod = 'monthly' | 'annual';
 

@@ -15,6 +15,7 @@ export default function AccountsScreen() {
   const { data: accounts = [] } = useAccounts();
   const { data: netWorth = 0 } = useNetWorth();
   const { data: settings = DEFAULT_SETTINGS } = useSettings();
+  const ungrouped = accounts.filter((a) => a.group_id === null);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
@@ -37,17 +38,13 @@ export default function AccountsScreen() {
           );
         })}
 
-        {(() => {
-          const ungrouped = accounts.filter((a) => a.group_id === null);
-          if (ungrouped.length === 0) return null;
-          return (
-            <GroupSection
-              group={{ id: 0, name: t.other, sort_order: 99 }}
-              accounts={ungrouped}
-              settings={settings}
-            />
-          );
-        })()}
+        {ungrouped.length > 0 && (
+          <GroupSection
+            group={{ id: 0, name: t.other, sort_order: 99 }}
+            accounts={ungrouped}
+            settings={settings}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );

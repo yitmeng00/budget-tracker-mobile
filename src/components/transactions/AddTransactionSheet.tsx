@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   View,
@@ -22,6 +22,7 @@ import {
 import { DEFAULT_SETTINGS } from '@/lib/settings';
 import { useColors } from '@/context/ThemeContext';
 import { useStrings } from '@/context/LanguageContext';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
 import { todayISO, currentTimeISO, formatDateISO, formatDateHeader } from '@/lib/date';
 import type { Transaction, TransactionType } from '@/types';
 
@@ -73,36 +74,11 @@ export default function AddTransactionSheet({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
 
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const sheetTranslateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(backdropOpacity, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(sheetTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      backdropOpacity.setValue(0);
-      sheetTranslateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(sheetTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(backdropOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const {
+    backdrop: backdropOpacity,
+    translateY: sheetTranslateY,
+    close: handleClose,
+  } = useBottomSheet(visible, onClose);
 
   useEffect(() => {
     if (visible) {
