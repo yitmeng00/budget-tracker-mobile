@@ -25,9 +25,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const colors = isDark ? darkColors : lightColors;
 
   useEffect(() => {
-    if (settings.theme !== 'system') {
-      Appearance.setColorScheme(settings.theme);
-    }
+    // null releases the override so the OS value takes effect;
+    // cast required because RN 0.85 types narrowed the parameter to 'light' | 'dark'
+    Appearance.setColorScheme(
+      (settings.theme === 'system' ? null : settings.theme) as 'light' | 'dark',
+    );
   }, [settings.theme]);
 
   return (
