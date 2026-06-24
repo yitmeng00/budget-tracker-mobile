@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
@@ -87,7 +88,10 @@ export default function SettingsScreen() {
   const now = new Date();
   const [budgetYear, setBudgetYear] = useState(now.getFullYear());
   const [budgetMonth, setBudgetMonth] = useState(now.getMonth() + 1);
-  const { data: budgets = [] } = useBudgets(budgetYear, budgetMonth);
+  const { data: budgets = [], isPlaceholderData: budgetsStale } = useBudgets(
+    budgetYear,
+    budgetMonth,
+  );
 
   function prevBudgetMonth() {
     if (budgetMonth === 1) {
@@ -361,6 +365,7 @@ export default function SettingsScreen() {
           onPrev={prevBudgetMonth}
           onNext={nextBudgetMonth}
           onJump={jumpBudgetMonth}
+          loading={budgetsStale}
         />
 
         <SectionCard>
@@ -502,12 +507,14 @@ function BudgetMonthNav({
   onPrev,
   onNext,
   onJump,
+  loading,
 }: {
   year: number;
   month: number;
   onPrev: () => void;
   onNext: () => void;
   onJump: (year: number, month: number) => void;
+  loading?: boolean;
 }) {
   const [picking, setPicking] = useState(false);
   const [pickYear, setPickYear] = useState(year);
@@ -544,11 +551,14 @@ function BudgetMonthNav({
         <TouchableOpacity onPress={onPrev} hitSlop={12} style={{ padding: 4 }}>
           <Text style={{ fontSize: 20, color: colors.textMuted }}>‹</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={openPicker} hitSlop={8}>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
-            {MONTH_NAMES[month - 1]} {year}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <TouchableOpacity onPress={openPicker} hitSlop={8}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.textPrimary }}>
+              {MONTH_NAMES[month - 1]} {year}
+            </Text>
+          </TouchableOpacity>
+          {loading && <ActivityIndicator size="small" color={colors.accent} />}
+        </View>
         <TouchableOpacity onPress={onNext} hitSlop={12} style={{ padding: 4 }}>
           <Text style={{ fontSize: 20, color: colors.textMuted }}>›</Text>
         </TouchableOpacity>
