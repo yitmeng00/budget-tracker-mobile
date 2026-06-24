@@ -179,10 +179,7 @@ export default function SettingsScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () =>
-          deleteAccountGroup.mutate(group.id, {
-            onError: (err) => Alert.alert('Cannot delete', (err as Error).message),
-          }),
+        onPress: () => deleteAccountGroup.mutate(group.id),
       },
     ]);
   }
@@ -193,10 +190,7 @@ export default function SettingsScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () =>
-          deleteAccount.mutate(acct.id, {
-            onError: (err) => Alert.alert('Cannot delete', (err as Error).message),
-          }),
+        onPress: () => deleteAccount.mutate(acct.id),
       },
     ]);
   }

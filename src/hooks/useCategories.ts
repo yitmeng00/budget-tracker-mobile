@@ -1,3 +1,4 @@
+import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getCategories,
@@ -8,6 +9,12 @@ import {
 } from '../services/categories';
 import type { Category } from '../types';
 
+function showError(err: unknown, fallback: string) {
+  const msg = err instanceof Error ? err.message : '';
+  const isOurs = msg && !/^(sqlite|SqliteError|SQLITE)/i.test(msg);
+  Alert.alert('Error', isOurs ? msg : fallback);
+}
+
 export function useCategories() {
   return useQuery({ queryKey: ['categories'], queryFn: getCategories });
 }
@@ -17,6 +24,7 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: (data: Omit<Category, 'id'>) => createCategory(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+    onError: (err) => showError(err, "Couldn't create this category. Please try again."),
   });
 }
 
@@ -26,6 +34,7 @@ export function useUpdateCategory() {
     mutationFn: ({ id, data }: { id: number; data: Partial<Omit<Category, 'id'>> }) =>
       updateCategory(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
+    onError: (err) => showError(err, "Couldn't update this category. Please try again."),
   });
 }
 
@@ -37,6 +46,7 @@ export function useDeleteCategory() {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
     },
+    onError: (err) => showError(err, "Couldn't delete this category. Please try again."),
   });
 }
 
@@ -51,5 +61,6 @@ export function useReassignAndDeleteCategory() {
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       queryClient.invalidateQueries({ queryKey: ['budgets'] });
     },
+    onError: (err) => showError(err, "Couldn't reassign transactions. Please try again."),
   });
 }
