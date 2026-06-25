@@ -5,8 +5,8 @@ export function seedIfNeeded(db: SQLite.SQLiteDatabase): void {
   if (existing) return;
 
   db.execSync(`
-    INSERT INTO settings (id, week_start, currency_country, currency_code, currency_symbol, unit_position)
-    VALUES (1, 'Sunday', 'Malaysia', 'MYR', 'RM', 'prefix');
+    INSERT INTO settings (id, week_start, currency_country, currency_code, currency_symbol, unit_position, theme)
+    VALUES (1, 'Sunday', 'Malaysia', 'MYR', 'RM', 'prefix', 'light');
 
     INSERT INTO account_groups (name, sort_order) VALUES ('Cash', 1);
     INSERT INTO account_groups (name, sort_order) VALUES ('Bank', 2);
