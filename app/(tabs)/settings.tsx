@@ -34,7 +34,7 @@ import {
 import { useBudgets, useSetBudgetDefault, useSetBudgetOverride } from '@/hooks/useBudgets';
 import { useRecurringRules } from '@/hooks/useRecurring';
 import { useQueryClient } from '@tanstack/react-query';
-import { importTransactionsCSV } from '@/services/importExport';
+import { importTransactionsCSV, exportBackupJSON, importBackupJSON } from '@/services/importExport';
 import ImportSheet from '@/components/settings/ImportSheet';
 import ExportSheet from '@/components/settings/ExportSheet';
 import RecurringRuleSheet from '@/components/settings/RecurringRuleSheet';
@@ -114,6 +114,36 @@ export default function SettingsScreen() {
   const [importLoading, setImportLoading] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importResultVisible, setImportResultVisible] = useState(false);
+  const [backupImportLoading, setBackupImportLoading] = useState(false);
+
+  async function handleExportBackup() {
+    try {
+      await exportBackupJSON();
+    } catch (e) {
+      Alert.alert(t.error, (e as Error).message);
+    }
+  }
+
+  function handleImportBackup() {
+    Alert.alert(t.importBackupConfirmTitle, t.importBackupConfirmMsg, [
+      { text: t.cancel, style: 'cancel' },
+      {
+        text: t.restore,
+        style: 'destructive',
+        onPress: async () => {
+          setBackupImportLoading(true);
+          try {
+            const restored = await importBackupJSON();
+            if (restored) await queryClient.invalidateQueries();
+          } catch (e) {
+            Alert.alert(t.importFailed, (e as Error).message);
+          } finally {
+            setBackupImportLoading(false);
+          }
+        },
+      },
+    ]);
+  }
 
   async function handleImport() {
     if (importLoading) return;
@@ -606,6 +636,43 @@ export default function SettingsScreen() {
               </Text>
             </View>
             {importLoading ? (
+              <ActivityIndicator size="small" color={colors.accent} />
+            ) : (
+              <Text style={{ fontSize: 18, color: colors.textFaint }}>↓</Text>
+            )}
+          </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
+          <TouchableOpacity
+            onPress={handleExportBackup}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
+          >
+            <Text style={{ flex: 1, fontSize: 15, color: colors.textPrimary }}>
+              {t.exportBackup}
+            </Text>
+            <Text style={{ fontSize: 18, color: colors.textFaint }}>↑</Text>
+          </TouchableOpacity>
+          <View style={{ height: 1, backgroundColor: colors.border, marginLeft: 16 }} />
+          <TouchableOpacity
+            onPress={handleImportBackup}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, color: colors.textPrimary }}>{t.importBackup}</Text>
+              <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
+                {t.importBackupDesc}
+              </Text>
+            </View>
+            {backupImportLoading ? (
               <ActivityIndicator size="small" color={colors.accent} />
             ) : (
               <Text style={{ fontSize: 18, color: colors.textFaint }}>↓</Text>

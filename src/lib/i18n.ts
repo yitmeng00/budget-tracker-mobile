@@ -130,6 +130,12 @@ export type Strings = {
   importCSV: string;
   importCSVDesc: string;
   importFailed: string;
+  exportBackup: string;
+  importBackup: string;
+  importBackupDesc: string;
+  importBackupConfirmTitle: string;
+  importBackupConfirmMsg: string;
+  restore: string;
 
   // About
   version: string;
@@ -329,6 +335,13 @@ const en: Strings = {
   importCSV: 'Import CSV',
   importCSVDesc: 'Date, Type, Category, Account, Amount, Note',
   importFailed: 'Import Failed',
+  exportBackup: 'Export Backup',
+  importBackup: 'Import Backup',
+  importBackupDesc: 'JSON — all settings, accounts, categories, transactions',
+  importBackupConfirmTitle: 'Replace All Data?',
+  importBackupConfirmMsg:
+    'This will permanently replace all your current data with the backup. This cannot be undone.',
+  restore: 'Restore',
 
   version: 'Version',
 
@@ -518,6 +531,13 @@ const ms: Strings = {
   importCSV: 'Import CSV',
   importCSVDesc: 'Tarikh, Jenis, Kategori, Akaun, Jumlah, Nota',
   importFailed: 'Import Gagal',
+  exportBackup: 'Eksport Sandaran',
+  importBackup: 'Import Sandaran',
+  importBackupDesc: 'JSON — semua tetapan, akaun, kategori, transaksi',
+  importBackupConfirmTitle: 'Ganti Semua Data?',
+  importBackupConfirmMsg:
+    'Ini akan menggantikan semua data semasa anda dengan sandaran secara kekal. Tindakan ini tidak boleh dibuat asal.',
+  restore: 'Pulihkan',
 
   version: 'Versi',
 
@@ -719,6 +739,12 @@ const zhHans: Strings = {
   importCSV: '导入 CSV',
   importCSVDesc: '日期、类型、分类、账户、金额、备注',
   importFailed: '导入失败',
+  exportBackup: '导出备份',
+  importBackup: '导入备份',
+  importBackupDesc: 'JSON — 所有设置、账户、分类、交易记录',
+  importBackupConfirmTitle: '替换所有数据？',
+  importBackupConfirmMsg: '此操作将永久替换当前所有数据，无法撤销。',
+  restore: '恢复',
 
   version: '版本',
 
@@ -919,6 +945,12 @@ const zhHant: Strings = {
   importCSV: '匯入 CSV',
   importCSVDesc: '日期、類型、分類、帳戶、金額、備註',
   importFailed: '匯入失敗',
+  exportBackup: '匯出備份',
+  importBackup: '匯入備份',
+  importBackupDesc: 'JSON — 所有設定、帳戶、分類、交易記錄',
+  importBackupConfirmTitle: '取代所有資料？',
+  importBackupConfirmMsg: '此操作將永久取代目前所有資料，無法復原。',
+  restore: '還原',
 
   version: '版本',
 

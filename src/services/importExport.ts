@@ -9,6 +9,165 @@ export interface ImportResult {
   skipped: { rowIndex: number; reason: string }[];
 }
 
+// ─── Full JSON Backup ─────────────────────────────────────────────────────────
+
+const BACKUP_VERSION = 1;
+
+export async function exportBackupJSON(): Promise<void> {
+  const db = getDb();
+
+  const backup = {
+    version: BACKUP_VERSION,
+    exported_at: new Date().toISOString(),
+    settings: db.getFirstSync('SELECT * FROM settings WHERE id = 1'),
+    account_groups: db.getAllSync('SELECT * FROM account_groups ORDER BY sort_order'),
+    accounts: db.getAllSync('SELECT * FROM accounts'),
+    categories: db.getAllSync('SELECT * FROM categories'),
+    transactions: db.getAllSync('SELECT * FROM transactions ORDER BY date, time'),
+    budget_limits: db.getAllSync('SELECT * FROM budget_limits'),
+    budget_overrides: db.getAllSync('SELECT * FROM budget_overrides'),
+    recurring_rules: db.getAllSync('SELECT * FROM recurring_rules'),
+  };
+
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const file = new File(Paths.cache, `ledgr-backup-${dateStr}.json`);
+  file.write(JSON.stringify(backup));
+  await Sharing.shareAsync(file.uri, {
+    mimeType: 'application/json',
+    dialogTitle: 'Export Backup',
+  });
+}
+
+export async function importBackupJSON(): Promise<boolean> {
+  const picked = await DocumentPicker.getDocumentAsync({
+    type: ['application/json', '*/*'],
+    copyToCacheDirectory: true,
+  });
+
+  if (picked.canceled || picked.assets.length === 0) return false;
+
+  const content = await new File(picked.assets[0].uri).text();
+  const backup = JSON.parse(content);
+
+  if (!backup.version || !backup.settings || !Array.isArray(backup.categories)) {
+    throw new Error('Invalid backup file. Please select a valid Ledgr backup.');
+  }
+
+  const db = getDb();
+  const s = backup.settings as Record<string, string>;
+
+  db.withTransactionSync(() => {
+    db.execSync(`
+      DELETE FROM transactions;
+      DELETE FROM budget_overrides;
+      DELETE FROM budget_limits;
+      DELETE FROM recurring_rules;
+      DELETE FROM accounts;
+      DELETE FROM account_groups;
+      DELETE FROM categories;
+    `);
+
+    db.runSync(
+      `INSERT OR REPLACE INTO settings
+         (id, week_start, currency_country, currency_code, currency_symbol, unit_position, theme, language)
+       VALUES (1, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        s.week_start,
+        s.currency_country,
+        s.currency_code,
+        s.currency_symbol,
+        s.unit_position,
+        s.theme ?? 'system',
+        s.language ?? 'en',
+      ],
+    );
+
+    for (const g of backup.account_groups ?? []) {
+      db.runSync('INSERT INTO account_groups (id, name, sort_order) VALUES (?, ?, ?)', [
+        g.id,
+        g.name,
+        g.sort_order,
+      ]);
+    }
+
+    for (const c of backup.categories ?? []) {
+      db.runSync('INSERT INTO categories (id, name, color, icon, type) VALUES (?, ?, ?, ?, ?)', [
+        c.id,
+        c.name,
+        c.color,
+        c.icon,
+        c.type,
+      ]);
+    }
+
+    for (const a of backup.accounts ?? []) {
+      db.runSync(
+        'INSERT INTO accounts (id, name, type, icon, color, balance, group_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [a.id, a.name, a.type, a.icon, a.color, a.balance, a.group_id ?? null],
+      );
+    }
+
+    for (const t of backup.transactions ?? []) {
+      db.runSync(
+        `INSERT INTO transactions
+           (id, account_id, category_id, amount, note, description, date, time)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          t.id,
+          t.account_id,
+          t.category_id,
+          t.amount,
+          t.note,
+          t.description ?? '',
+          t.date,
+          t.time ?? '00:00:00',
+        ],
+      );
+    }
+
+    for (const b of backup.budget_limits ?? []) {
+      db.runSync(
+        'INSERT INTO budget_limits (category_id, default_amount, effective_from_year, effective_from_month) VALUES (?, ?, ?, ?)',
+        [
+          b.category_id,
+          b.default_amount,
+          b.effective_from_year ?? null,
+          b.effective_from_month ?? null,
+        ],
+      );
+    }
+
+    for (const o of backup.budget_overrides ?? []) {
+      db.runSync(
+        'INSERT INTO budget_overrides (category_id, amount, year, month) VALUES (?, ?, ?, ?)',
+        [o.category_id, o.amount, o.year, o.month],
+      );
+    }
+
+    for (const r of backup.recurring_rules ?? []) {
+      db.runSync(
+        `INSERT INTO recurring_rules
+           (id, category_id, account_id, amount, note, description, frequency, start_date, last_created_date, active)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          r.id,
+          r.category_id,
+          r.account_id,
+          r.amount,
+          r.note,
+          r.description ?? '',
+          r.frequency ?? 'monthly',
+          r.start_date,
+          r.last_created_date ?? null,
+          r.active ?? 1,
+        ],
+      );
+    }
+  });
+
+  return true;
+}
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export type ExportScope =
