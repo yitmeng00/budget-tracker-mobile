@@ -100,6 +100,7 @@ A personal finance tracking application for iOS and Android, built with React Na
 | **Recurring Rules** | Automated recurring transactions on daily, weekly, biweekly, monthly, end-of-month, bimonthly, and annual schedules |
 | **Statistics** | Monthly and annual summaries, 6-month income/expense trend chart, and category breakdown donut charts |
 | **CSV Import/Export** | Export transactions as CSV; import from a compatible CSV file |
+| **Backup & Restore** | Export a full JSON backup (all settings, accounts, categories, transactions, budgets, recurring rules); import on a new device to restore everything |
 | **Appearance** | Light, dark, and system-adaptive themes |
 | **Localization** | English, Bahasa Melayu, Simplified Chinese, Traditional Chinese |
 | **Currency** | Configurable currency symbol and position (prefix/suffix) |
