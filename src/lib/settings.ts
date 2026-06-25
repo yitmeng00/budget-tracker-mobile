@@ -6,6 +6,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
   currency_code: 'MYR',
   currency_symbol: 'RM',
   unit_position: 'prefix',
-  theme: 'system',
+  theme: 'light',
   language: 'en',
 };
