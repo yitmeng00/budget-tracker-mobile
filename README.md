@@ -77,11 +77,11 @@ A personal finance tracking application for iOS and Android, built with React Na
     </td>
   </tr>
   <tr>
-    <td align="center" width="50%">
+    <td align="center" colspan="2" width="50%">
       <img src="assets/screenshots/settings4.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Budgets</b></sub>
     </td>
-    <td align="center" width="50%">
+    <td align="center" colspan="2" width="50%">
       <img src="assets/screenshots/settings5.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Recurring Transactions, Data, About</b></sub>
     </td>
