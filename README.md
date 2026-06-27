@@ -85,6 +85,8 @@ A personal finance tracking application for iOS and Android, built with React Na
       <img src="assets/screenshots/settings5.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Recurring Transactions, Data, About</b></sub>
     </td>
+    <td></td>
+    <td></td>
   </tr>
 </table>
 
@@ -92,34 +94,34 @@ A personal finance tracking application for iOS and Android, built with React Na
 
 ## Features
 
-| Area | Details |
-|---|---|
-| **Transactions** | Add, edit, and delete income/expense entries with category, account, date, note, and optional description |
-| **Accounts** | Multiple accounts with grouping, per-account balance tracking, and net worth summary |
-| **Budgets** | Monthly category budgets with per-month overrides and over-budget alerts |
-| **Recurring Rules** | Automated recurring transactions on daily, weekly, biweekly, monthly, end-of-month, bimonthly, and annual schedules |
-| **Statistics** | Monthly and annual summaries, 6-month income/expense trend chart, and category breakdown donut charts |
-| **CSV Import/Export** | Export transactions as CSV; import from a compatible CSV file |
-| **Backup & Restore** | Export a full JSON backup (all settings, accounts, categories, transactions, budgets, recurring rules); import on a new device to restore everything |
-| **Appearance** | Light, dark, and system-adaptive themes |
-| **Localization** | English, Bahasa Melayu, Simplified Chinese, Traditional Chinese |
-| **Currency** | Configurable currency symbol and position (prefix/suffix) |
-| **Week Start** | Configurable week start day (Sunday, Monday, Saturday) |
+| Area                  | Details                                                                                                                                              |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Transactions**      | Add, edit, and delete income/expense entries with category, account, date, note, and optional description                                            |
+| **Accounts**          | Multiple accounts with grouping, per-account balance tracking, and net worth summary                                                                 |
+| **Budgets**           | Monthly category budgets with per-month overrides and over-budget alerts                                                                             |
+| **Recurring Rules**   | Automated recurring transactions on daily, weekly, biweekly, monthly, end-of-month, bimonthly, and annual schedules                                  |
+| **Statistics**        | Monthly and annual summaries, 6-month income/expense trend chart, and category breakdown donut charts                                                |
+| **CSV Import/Export** | Export transactions as CSV; import from a compatible CSV file                                                                                        |
+| **Backup & Restore**  | Export a full JSON backup (all settings, accounts, categories, transactions, budgets, recurring rules); import on a new device to restore everything |
+| **Appearance**        | Light, dark, and system-adaptive themes                                                                                                              |
+| **Localization**      | English, Bahasa Melayu, Simplified Chinese, Traditional Chinese                                                                                      |
+| **Currency**          | Configurable currency symbol and position (prefix/suffix)                                                                                            |
+| **Week Start**        | Configurable week start day (Sunday, Monday, Saturday)                                                                                               |
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | [Expo](https://expo.dev) SDK 56 |
-| Runtime | React Native 0.85.3 (New Architecture enabled) |
-| Navigation | [Expo Router](https://expo.github.io/router) v4 (file-based) |
-| Database | [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) — on-device SQLite |
-| Server state | [TanStack Query](https://tanstack.com/query/latest) v5 |
-| Styling | [NativeWind](https://www.nativewind.dev) v4 (Tailwind CSS for React Native) |
-| Language | TypeScript 6 |
-| Icons | [Lucide React Native](https://lucide.dev) |
+| Layer        | Technology                                                                          |
+| ------------ | ----------------------------------------------------------------------------------- |
+| Framework    | [Expo](https://expo.dev) SDK 56                                                     |
+| Runtime      | React Native 0.85.3 (New Architecture enabled)                                      |
+| Navigation   | [Expo Router](https://expo.github.io/router) v4 (file-based)                        |
+| Database     | [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) — on-device SQLite |
+| Server state | [TanStack Query](https://tanstack.com/query/latest) v5                              |
+| Styling      | [NativeWind](https://www.nativewind.dev) v4 (Tailwind CSS for React Native)         |
+| Language     | TypeScript 6                                                                        |
+| Icons        | [Lucide React Native](https://lucide.dev)                                           |
 
 ---
 
