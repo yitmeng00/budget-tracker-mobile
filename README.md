@@ -21,72 +21,70 @@ A personal finance tracking application for iOS and Android, built with React Na
 
 ## Screenshots
 
-<table>
+<table width="100%">
   <tr>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/transactions-daily.png" width="200" alt="Transactions daily view screen" /><br/>
       <sub><b>Transactions - Daily</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/transactions-calendar.png" width="200" alt="Transactions calendar view screen" /><br/>
       <sub><b>Transactions - Calendar</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/transactions-monthly.png" width="200" alt="Transactions monthly view screen" /><br/>
       <sub><b>Transactions - Monthly</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/add-transaction.png" width="200" alt="Add transaction sheet" /><br/>
       <sub><b>Add Transaction</b></sub>
     </td>
   </tr>
   <tr>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/stats-monthly1.png" width="200" alt="Monthly statistics" /><br/>
       <sub><b>Statistics — Monthly 1st section</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/stats-monthly2.png" width="200" alt="Monthly statistics" /><br/>
       <sub><b>Statistics — Monthly 2nd section</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/stats-monthly3.png" width="200" alt="Monthly statistics" /><br/>
       <sub><b>Statistics — Monthly 3rd section</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/stats-annual.png" width="200" alt="Annual statistics" /><br/>
       <sub><b>Statistics — Annual</b></sub>
     </td>
   </tr>
   <tr>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/accounts.png" width="200" alt="Accounts screen" /><br/>
       <sub><b>Accounts</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/settings1.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - General, Language, Appearance, Currency</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/settings2.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Categories</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="25%">
       <img src="assets/screenshots/settings3.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Account Groups and Accounts</b></sub>
     </td>
   </tr>
   <tr>
-    <td align="center">
+    <td align="center" width="50%">
       <img src="assets/screenshots/settings4.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Budgets</b></sub>
     </td>
-    <td align="center">
+    <td align="center" width="50%">
       <img src="assets/screenshots/settings5.png" width="200" alt="Settings screen" /><br/>
       <sub><b>Settings - Recurring Transactions, Data, About</b></sub>
     </td>
-    <td></td>
-    <td></td>
   </tr>
 </table>
 
