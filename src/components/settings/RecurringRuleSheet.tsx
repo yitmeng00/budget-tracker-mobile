@@ -45,7 +45,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
   const updateRule = useUpdateRecurringRule();
   const deleteRule = useDeleteRecurringRule();
 
-  const { backdrop, translateY, close } = useBottomSheet(visible, onClose);
+  const { backdrop, translateY, close, panResponder } = useBottomSheet(visible, onClose);
 
   const language = settings.language;
   const LOCALE_MAP: Record<string, string> = {
@@ -218,6 +218,7 @@ export default function RecurringRuleSheet({ visible, onClose, rule }: Props) {
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
