@@ -10,6 +10,9 @@ import {
   Image,
   Animated,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
@@ -39,6 +42,7 @@ import ImportSheet from '@/components/settings/ImportSheet';
 import ExportSheet from '@/components/settings/ExportSheet';
 import RecurringRuleSheet from '@/components/settings/RecurringRuleSheet';
 import { useMonth } from '@/hooks/useMonth';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
 import type { ImportResult } from '@/services/importExport';
 import type { RecurringRule } from '@/types';
 import { DEFAULT_SETTINGS } from '@/lib/settings';
@@ -1229,36 +1233,12 @@ function CategoryModal({
     setName(category?.name ?? '');
   }
 
-  const catBackdrop = useRef(new Animated.Value(0)).current;
-  const catTranslateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(catBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(catTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      catBackdrop.setValue(0);
-      catTranslateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(catTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(catBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const {
+    backdrop: catBackdrop,
+    translateY: catTranslateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
   function handleSave() {
     const trimmed = name.trim();
@@ -1273,7 +1253,10 @@ function CategoryModal({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
         <Animated.View
           pointerEvents="none"
           style={{
@@ -1288,6 +1271,7 @@ function CategoryModal({
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
@@ -1356,7 +1340,7 @@ function CategoryModal({
             />
           </View>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -1387,36 +1371,12 @@ function AccountGroupModal({
     setName(group?.name ?? '');
   }
 
-  const grpBackdrop = useRef(new Animated.Value(0)).current;
-  const grpTranslateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(grpBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(grpTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      grpBackdrop.setValue(0);
-      grpTranslateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(grpTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(grpBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const {
+    backdrop: grpBackdrop,
+    translateY: grpTranslateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
   function handleSave() {
     const trimmed = name.trim();
@@ -1431,7 +1391,10 @@ function AccountGroupModal({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
         <Animated.View
           pointerEvents="none"
           style={{
@@ -1446,6 +1409,7 @@ function AccountGroupModal({
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
@@ -1508,7 +1472,7 @@ function AccountGroupModal({
             />
           </View>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -1545,35 +1509,48 @@ function AccountModal({
     setBalance('0');
   }
 
-  const acctBackdrop = useRef(new Animated.Value(0)).current;
-  const acctTranslateY = useRef(new Animated.Value(800)).current;
+  const {
+    backdrop: acctBackdrop,
+    translateY: acctTranslateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(acctBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(acctTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
+  const keyboardOffset = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    if (visible) {
-      acctBackdrop.setValue(0);
-      acctTranslateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(acctTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(acctBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
+    if (!visible) {
+      keyboardOffset.setValue(0);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let pendingHide: ReturnType<typeof setTimeout> | null = null;
+
+    const showSub = Keyboard.addListener('keyboardWillShow', (e) => {
+      if (pendingHide) {
+        clearTimeout(pendingHide);
+        pendingHide = null;
+      }
+      Animated.timing(keyboardOffset, {
+        toValue: -e.endCoordinates.height,
+        duration: e.duration ?? 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener('keyboardWillHide', (e) => {
+      pendingHide = setTimeout(() => {
+        Animated.timing(keyboardOffset, {
+          toValue: 0,
+          duration: e.duration ?? 250,
+          useNativeDriver: true,
+        }).start();
+      }, 50);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+      if (pendingHide) clearTimeout(pendingHide);
+    };
   }, [visible]);
 
   function handleSave() {
@@ -1612,11 +1589,12 @@ function AccountModal({
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
-            transform: [{ translateY: acctTranslateY }],
+            transform: [{ translateY: acctTranslateY }, { translateY: keyboardOffset }],
           }}
         >
           <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 4 }}>
@@ -1765,36 +1743,12 @@ function BudgetSettingsModal({
     setScope(hasOverride ? 'month' : 'onwards');
   }
 
-  const budgetBackdrop = useRef(new Animated.Value(0)).current;
-  const budgetTranslateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(budgetBackdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(budgetTranslateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      budgetBackdrop.setValue(0);
-      budgetTranslateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(budgetTranslateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(budgetBackdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const {
+    backdrop: budgetBackdrop,
+    translateY: budgetTranslateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
   function handleSave() {
     if (!entry) return;
@@ -1848,7 +1802,10 @@ function BudgetSettingsModal({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
         <Animated.View
           pointerEvents="none"
           style={{
@@ -1863,6 +1820,7 @@ function BudgetSettingsModal({
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
@@ -1990,7 +1948,7 @@ function BudgetSettingsModal({
             )}
           </View>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
