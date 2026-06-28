@@ -21,7 +21,12 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
     { label: t.expense, value: 'expense' },
   ];
   const { data: categories = [] } = useCategories();
-  const { backdrop, translateY, close: handleClose } = useBottomSheet(visible, onClose);
+  const {
+    backdrop,
+    translateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
   function toggleType(value: TransactionFilters['type']) {
     onChange({
@@ -67,6 +72,7 @@ export default function FilterSheet({ visible, onClose, filters, onChange }: Pro
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
