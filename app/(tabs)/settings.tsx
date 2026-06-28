@@ -149,6 +149,20 @@ export default function SettingsScreen() {
     ]);
   }
 
+  function showCSVFormatGuide() {
+    Alert.alert(
+      'CSV Format Guide',
+      'Header row (required):\nDate, Type, Category, Account, Amount, Note\n\n' +
+        '• Date — YYYY-MM-DD\n  e.g. 2024-01-15\n\n' +
+        '• Type — income or expense\n\n' +
+        '• Category — exact name of an existing category (case-insensitive)\n\n' +
+        '• Account — exact name of an existing account (case-insensitive)\n\n' +
+        '• Amount — positive number, e.g. 12.50\n\n' +
+        '• Note — optional, any text\n\n' +
+        'Tip: Export your transactions first to see an example file.',
+    );
+  }
+
   async function handleImport() {
     if (importLoading) return;
     setImportLoading(true);
@@ -634,7 +648,15 @@ export default function SettingsScreen() {
             }}
           >
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 15, color: colors.textPrimary }}>{t.importCSV}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={{ fontSize: 15, color: colors.textPrimary }}>{t.importCSV}</Text>
+                <TouchableOpacity
+                  onPress={showCSVFormatGuide}
+                  style={{ marginLeft: 6, padding: 2 }}
+                >
+                  <Text style={{ fontSize: 13, color: colors.accent }}>ⓘ</Text>
+                </TouchableOpacity>
+              </View>
               <Text style={{ fontSize: 12, color: colors.textMuted, marginTop: 2 }}>
                 {t.importCSVDesc}
               </Text>
