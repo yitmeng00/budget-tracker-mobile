@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useColors } from '@/context/ThemeContext';
+import { useBottomSheet } from '@/hooks/useBottomSheet';
 import type { ImportResult } from '@/services/importExport';
 
 interface Props {
@@ -11,36 +11,12 @@ interface Props {
 
 export default function ImportSheet({ visible, onClose, result }: Props) {
   const colors = useColors();
-  const backdrop = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(800)).current;
-
-  function handleClose() {
-    Animated.parallel([
-      Animated.timing(backdrop, { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 800, duration: 220, useNativeDriver: true }),
-    ]).start(() => onClose());
-  }
-
-  useEffect(() => {
-    if (visible) {
-      backdrop.setValue(0);
-      translateY.setValue(800);
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          damping: 35,
-          stiffness: 400,
-          mass: 1,
-        }),
-        Animated.sequence([
-          Animated.delay(120),
-          Animated.timing(backdrop, { toValue: 1, duration: 250, useNativeDriver: true }),
-        ]),
-      ]).start();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible]);
+  const {
+    backdrop,
+    translateY,
+    close: handleClose,
+    panResponder,
+  } = useBottomSheet(visible, onClose);
 
   if (!result) return null;
 
@@ -63,6 +39,7 @@ export default function ImportSheet({ visible, onClose, result }: Props) {
         />
         <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={handleClose} />
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,

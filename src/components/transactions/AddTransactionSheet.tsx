@@ -78,6 +78,7 @@ export default function AddTransactionSheet({
     backdrop: backdropOpacity,
     translateY: sheetTranslateY,
     close: handleClose,
+    panResponder,
   } = useBottomSheet(visible, onClose);
 
   useEffect(() => {
@@ -215,6 +216,7 @@ export default function AddTransactionSheet({
 
         {/* Sheet: slides up independently via translateY */}
         <Animated.View
+          {...panResponder.panHandlers}
           style={{
             backgroundColor: colors.surface,
             borderTopLeftRadius: 24,
