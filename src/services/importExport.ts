@@ -31,7 +31,7 @@ export async function exportBackupJSON(): Promise<void> {
 
   const dateStr = new Date().toISOString().slice(0, 10);
   const file = new File(Paths.cache, `ledgr-backup-${dateStr}.json`);
-  file.write(JSON.stringify(backup));
+  await file.write(JSON.stringify(backup));
   await Sharing.shareAsync(file.uri, {
     mimeType: 'application/json',
     dialogTitle: 'Export Backup',
@@ -225,7 +225,7 @@ export async function exportTransactionsCSV(scope: ExportScope = { type: 'all' }
         : 'all';
   const fileName = `ledgr-${suffix}.csv`;
   const file = new File(Paths.cache, fileName);
-  file.write(csv);
+  await file.write(csv);
   await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: 'Export Transactions' });
 }
 
