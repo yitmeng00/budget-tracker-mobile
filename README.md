@@ -112,9 +112,9 @@ A personal finance tracking application for iOS and Android, built with React Na
 
 | Layer        | Technology                                                                          |
 | ------------ | ----------------------------------------------------------------------------------- |
-| Framework    | [Expo](https://expo.dev) SDK 56                                                     |
-| Runtime      | React Native 0.85.3 (New Architecture enabled)                                      |
-| Navigation   | [Expo Router](https://expo.github.io/router) v4 (file-based)                        |
+| Framework    | [Expo](https://expo.dev) SDK 58                                                     |
+| Runtime      | React Native 0.88 (New Architecture, Hermes) with React 19.3                        |
+| Navigation   | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based)              |
 | Database     | [expo-sqlite](https://docs.expo.dev/versions/latest/sdk/sqlite/) — on-device SQLite |
 | Server state | [TanStack Query](https://tanstack.com/query/latest) v5                              |
 | Styling      | [NativeWind](https://www.nativewind.dev) v4 (Tailwind CSS for React Native)         |
@@ -125,12 +125,14 @@ A personal finance tracking application for iOS and Android, built with React Na
 
 ## Prerequisites
 
-- **Node.js** 20 or later
+- **Node.js** 22.13+ or 24.3+ (required by Expo SDK 58; odd-numbered releases are not supported)
 - **npm** 10 or later
-- **Expo CLI** — install globally with `npm install -g expo-cli`
-- **Xcode** 16+ (iOS builds, macOS only)
+- **Xcode** with an iOS Simulator (macOS only; currently built with Xcode 26.5)
+- **CocoaPods** (iOS native dependencies)
 - **Android Studio** (Android builds, optional)
-- An iOS Simulator or physical device registered in your Apple Developer account
+- For a physical iPhone: a device running iOS 16.4 or later, with signing set up in Xcode
+
+No global Expo CLI is needed. The project's local CLI runs through `npx expo`.
 
 ---
 
@@ -139,7 +141,7 @@ A personal finance tracking application for iOS and Android, built with React Na
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ivanwong/budget-tracker-mobile.git
+git clone https://github.com/yitmeng00/budget-tracker-mobile.git
 cd budget-tracker-mobile
 ```
 
@@ -161,13 +163,35 @@ npm run ios
 npm run android
 ```
 
-### 5. Start the Expo development server only
+`npm run ios` and `npm run android` generate the native `ios/` and `android/` folders (via Expo prebuild), compile a debug build, and start the Metro dev server.
+
+### 5. Start the Metro dev server only
 
 ```bash
 npm start
 ```
 
-> **Note:** The first launch initialises the SQLite database and seeds default categories. Subsequent launches load from the existing database without re-seeding.
+Use this to reconnect to a debug build that is already installed.
+
+### 6. Install a release build on an iPhone
+
+```bash
+npx expo run:ios --configuration Release --device
+```
+
+This builds an optimised, standalone app that runs without Metro, and installs it on a connected iPhone.
+
+> **Note:** The first launch initialises the SQLite database and seeds default settings, categories, account groups, and accounts. Subsequent launches load from the existing database without re-seeding.
+
+### Native folders
+
+`ios/` and `android/` are generated from `app.json` and are git-ignored, so don't edit them by hand. After upgrading Expo or changing native dependencies or config plugins, regenerate them:
+
+```bash
+npx expo prebuild --clean
+```
+
+If an iOS build fails with `node: No such file or directory`, `ios/.xcode.env.local` points to a Node version that is no longer installed. Running `npx expo prebuild --clean` regenerates it.
 
 ---
 
@@ -178,6 +202,7 @@ npm start
 ├── app/                        # Expo Router screens
 │   ├── _layout.tsx             # Root layout — providers, DB init, recurring processor
 │   └── (tabs)/
+│       ├── _layout.tsx         # Bottom tab bar
 │       ├── index.tsx           # Transactions screen
 │       ├── stats.tsx           # Statistics screen
 │       ├── accounts.tsx        # Accounts screen
@@ -185,10 +210,10 @@ npm start
 │
 └── src/
     ├── components/             # UI components grouped by domain
-    │   ├── transactions/       # AddTransactionSheet, FilterSheet, SummaryCards, …
-    │   ├── settings/           # RecurringRuleSheet, category/account/budget sheets
+    │   ├── transactions/       # AddTransactionSheet, FilterSheet, Daily/Calendar/MonthlyView, …
+    │   ├── settings/           # ImportSheet, ExportSheet, RecurringRuleSheet
     │   ├── stats/              # TrendChart, DonutChart
-    │   └── ui/                 # MonthHeader, shared primitives
+    │   └── ui/                 # MonthHeader, ViewToggle
     │
     ├── context/
     │   ├── ThemeContext.tsx     # Theme provider and useColors hook
@@ -196,7 +221,8 @@ npm start
     │
     ├── db/
     │   ├── client.ts           # SQLite connection singleton
-    │   └── schema.ts           # CREATE TABLE statements and migrations
+    │   ├── schema.ts           # CREATE TABLE statements and migrations
+    │   └── seed.ts             # Default settings, categories, and accounts on first launch
     │
     ├── hooks/                  # TanStack Query hooks (one file per domain)
     ├── services/               # Raw SQLite query functions (no React)
@@ -218,11 +244,11 @@ There is no global client-side state store. All server state lives in the TanSta
 
 ### Recurring transactions
 
-On every app launch, `src/services/recurring.ts` checks all active recurring rules against today's date and creates any transactions that are due. This runs synchronously in a `useEffect` inside the root layout so it completes before the first query results render.
+On every app launch, `src/services/recurring.ts` checks all active recurring rules against today's date and creates any transactions that are due. It runs once, synchronously, in a `useEffect` in the root layout. If it creates any transactions, it invalidates the TanStack Query cache so every screen refetches and shows them.
 
 ### Navigation
 
-File-based routing via Expo Router. All screens live under `app/(tabs)/` and are presented in a native bottom tab bar. Sheets (add transaction, filter, recurring rule editor, etc.) are custom animated bottom sheets implemented with the React Native `Animated` API via the shared `useBottomSheet` hook.
+File-based routing via Expo Router. The root layout is a stack, and the four screens live under `app/(tabs)/` in an Expo Router `Tabs` bottom tab bar, styled to match the app theme. Sheets (add transaction, filter, import/export, recurring rule editor, and the settings editors) are custom bottom sheets. They are built on the React Native `Animated` and `PanResponder` APIs through the shared `useBottomSheet` hook, which handles open/close animation and swipe-to-dismiss. Swipe actions on transaction rows use `react-native-gesture-handler`.
 
 ---
 
@@ -241,7 +267,7 @@ To add a new language:
 
 ## Data & Privacy
 
-All user data is stored exclusively on-device in the local SQLite database. No data is transmitted to any server. The CSV export feature writes a file to the device's local file system and uses the native share sheet — it does not upload data to any third-party service.
+All user data is stored exclusively on-device in the local SQLite database. No data is transmitted to any server. CSV and JSON backup exports write a file to the app's local cache and open the native share sheet, so the file goes only where you choose to send or save it. The app does not upload data to any third-party service.
 
 ---
 
